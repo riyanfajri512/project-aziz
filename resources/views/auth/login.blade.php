@@ -13,6 +13,7 @@
                 <h3 class="text-center">Login</h3>
                 <form method="POST" action="{{ route('login') }}">
                     @csrf
+                    <p>halo guys</p>
                     <div class="mb-3">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" name="email" class="form-control" required>
