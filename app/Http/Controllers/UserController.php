@@ -4,10 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 
-class JenisKendaraanController extends Controller
+class UserController extends Controller
 {
     public function index()
     {
-        return view('MD.IndexJeniskendaraan');
+        return view('MD.user');
     }
 }
