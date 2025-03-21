@@ -11,7 +11,9 @@
     <link href="{{ asset('template/assets/vendor/fontawesome/css/solid.min.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/vendor/fontawesome/css/brands.min.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ asset('template/assets/vendor/datatables/datatables.min.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/css/master.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/sweetalert2.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/vendor/flagiconcss/css/flag-icon.min.css') }}" rel="stylesheet">
 </head>
 
@@ -118,9 +120,11 @@
     <!-- JS -->
     <script src="{{ asset('template/assets/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('template/assets/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
+    <script src="{{ asset('template/assets/vendor/datatables/datatables.min.js') }}"></script>
     <script src="{{ asset('template/assets/vendor/chartsjs/Chart.min.js') }}"></script>
     <script src="{{ asset('template/assets/js/dashboard-charts.js') }}"></script>
     <script src="{{ asset('template/assets/js/script.js') }}"></script>
+    <script src="{{ asset('js/sweetalert2.js') }}"></script>
 
     @yield('script')
 </body>
