@@ -25,10 +25,11 @@
                         <img class="brand" src="assets/img/bootstraper-logo.png" alt="bootstraper logo">
                     </div>
                     <h6 class="mb-4 text-muted">Login to your account</h6>
-                    <form action="" method="">
+                    <form id="loginForm">
                         <div class="mb-3 text-start">
                             <label for="email" class="form-label">Username/Email</label>
-                            <input type="text" class="form-control" placeholder="Enter your email or username" required>
+                            <input type="text" class="form-control" placeholder="Enter your email or username"
+                                required>
                         </div>
                         <div class="mb-3 text-start">
                             <label for="password" class="form-label">Password</label>
@@ -43,7 +44,7 @@
                                 </label>
                             </div>
                         </div> --}}
-                        <button class="btn btn-primary mb-4" style="width:100%">Login</button>
+                        <button type="submit" class="btn btn-primary mb-4" style="width:100%">Login</button>
                     </form>
                     {{-- <p class="mb-2 text-muted">Forgot password? <a href="forgot-password.html">Reset</a></p>
                     <p class="mb-0 text-muted">Don't have account yet? <a href="signup.html">Signup</a></p> --}}
@@ -55,7 +56,36 @@
     <script src="{{ asset('template/assets/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
 
     <script>
+        $(document).ready(function() {
+            $("#loginForm").submit(function(event) {
+                event.preventDefault(); // Mencegah form reload
 
+                var email = $("#email").val();
+                var password = $("#password").val();
+
+                $.ajax({
+                    url: "{{ route('login') }}", // Route ke login
+                    type: "POST",
+                    data: {
+                        _token: "{{ csrf_token() }}",
+                        email: email,
+                        password: password
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            window.location.href =
+                            "/dashboard"; // Redirect setelah login berhasil
+                        } else {
+                            $("#errorMessage").text(response.message); // Tampilkan pesan error
+                        }
+                    },
+                    error: function(xhr) {
+                        $("#errorMessage").text(
+                        "Email atau password salah."); // Tampilkan error
+                    }
+                });
+            });
+        });
     </script>
 </body>
 
