@@ -21,37 +21,37 @@
     @yield('sidebar')
 
     <div class="wrapper">
-        <nav id="sidebar" class="active">
+        <nav id="sidebar">
             <div class="sidebar-header">
                 <img src="assets/img/bootstraper-logo.png" alt="bootraper logo" class="app-logo">
             </div>
             <ul class="list-unstyled components text-secondary">
                 <li>
-                    <a href="dashboard.html"><i class="fas fa-home"></i> Dashboard</a>
+                    <a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+
                 </li>
                 <li>
                     <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false"
                         class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group"></i> MD</a>
-                    <ul class="collapse list-unstyled" id="uielementsmenu">
                         <li>
-                            <a href="ui-buttons.html"><i class="fas fa-angle-right"></i> Supplier</a>
+                            <a href="{{ route('supplier') }}"><i class="fas fa-angle-right"></i> Supplier</a>
                         </li>
                         <li>
-                            <a href="ui-badges.html"><i class="fas fa-angle-right"></i> Kategori</a>
+                            <a href="{{ route('kategori') }}"><i class="fas fa-angle-right"></i> Kategori</a>
                         </li>
                         <li>
-                            <a href="ui-cards.html"><i class="fas fa-angle-right"></i> User</a>
+                            <a href="{{ route('user') }}"><i class="fas fa-angle-right"></i> User</a>
                         </li>
                         <li>
-                            <a href="ui-alerts.html"><i class="fas fa-angle-right"></i> Jenis Kendaraan</a>
+                            <a href="{{ route('jenis-kendaraan') }}"><i class="fas fa-angle-right"></i> Jenis Kendaraan</a>
                         </li>
                         <li>
-                            <a href="ui-tabs.html"><i class="fas fa-angle-right"></i>Lokasi</a>
+                            <a href="{{ route('lokasi') }}"><i class="fas fa-angle-right"></i>Lokasi</a>
                         </li>
                         <li>
-                            <a href="ui-date-time-picker.html"><i class="fas fa-angle-right"></i> SP</a>
+                            <a href="{{ route('sp') }}"><i class="fas fa-angle-right"></i> SP</a>
                         </li>
-                    </ul>
+                    </>
                 </li>
         </nav>
         <div id="body" class="active">
