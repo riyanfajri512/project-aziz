@@ -15,7 +15,13 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::get('/dashboardnew', [DashboardController::class, 'index'])->name('dashboard');
+
+// Jenis Kendaraan
 Route::get('/jeniskendaraan', [JenisKendaraanController::class, 'index'])->name('jenis-kendaraan');
+Route::post('/jeniskendaraan/store', [JenisKendaraanController::class, 'store']);
+Route::put('/jeniskendaraan/update/{id}', [JenisKendaraanController::class, 'update']);
+Route::delete('/jeniskendaraan/destroy/{id}', [JenisKendaraanController::class, 'destroy']);
+
 Route::get('/kategori', [KategoriController::class, 'index'])->name('kategori');
 Route::get('/lokasi', [LokasiController::class, 'index'])->name('lokasi');
 Route::get('/sp', [SpController::class, 'index'])->name('sp');
