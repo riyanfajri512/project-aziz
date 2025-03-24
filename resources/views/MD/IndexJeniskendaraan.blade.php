@@ -162,7 +162,7 @@
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
-                            url: `/kendaraan/destroy/${id}`,
+                            url: `/jeniskendaraan/destroy/${id}`,
                             type: "DELETE",
                             data: {
                                 _token: "{{ csrf_token() }}"
