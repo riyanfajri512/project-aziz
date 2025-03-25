@@ -33,8 +33,10 @@
 
                 </li>
                 <li>
-                    <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false"
-                        class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group"></i> MD</a>
+                <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group">
+                </i> MD</a>
+                <ul class="collapse list-unstyled" id="uielementsmenu">
+                    
                         <li>
                             <a href="{{ route('supplier') }}"><i class="fas fa-angle-right"></i> Supplier</a>
                         </li>
