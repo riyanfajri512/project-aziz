@@ -34,7 +34,7 @@
                     <a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
                 </li>
                 <li>
-                    <a href="#"><i class="fas fa-file-alt"></i> Permintaan</a>
+                    <a href="{{ route('permintaan.index') }}"><i class="fas fa-file-alt"></i> Permintaan</a>
                 </li>
                 <li>
                     <a href="#"><i class="fas fa-box-open"></i> Penerimaan</a>

@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JenisKendaraanController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LokasiController;
+use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\SpController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -18,6 +19,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Dashboard
     Route::get('/dashboardnew', [DashboardController::class, 'index'])->name('dashboard');
+
+    //Permintaan
+    Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
+    Route::get('/permintaan/tambah', [PermintaanController::class, 'tambah'])->name('permintaan.formtambah');
 
     // Jenis Kendaraan
     Route::get('/jeniskendaraan', [JenisKendaraanController::class, 'index'])->name('jenis-kendaraan');
