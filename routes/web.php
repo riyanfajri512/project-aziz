@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JenisKendaraanController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LokasiController;
+use App\Http\Controllers\PenerimaanController;
 use App\Http\Controllers\SpController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -19,7 +20,11 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard
     Route::get('/dashboardnew', [DashboardController::class, 'index'])->name('dashboard');
 
-    // Jenis Kendaraan
+    // Penerimaan
+    Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan');
+    Route::get('/penerimaan/tambah', [PenerimaanController::class, 'tambah'])->name('penerimaan.tambahan');
+
+    // Jenis JenisKendaraanController
     Route::get('/jeniskendaraan', [JenisKendaraanController::class, 'index'])->name('jenis-kendaraan');
     Route::post('/jeniskendaraan/store', [JenisKendaraanController::class, 'store']);
     Route::put('/jeniskendaraan/update/{id}', [JenisKendaraanController::class, 'update']);
