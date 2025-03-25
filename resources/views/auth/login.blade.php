@@ -11,9 +11,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Selamat datang di aplikasi PT. XYZ</title>
     <link href="{{ asset('template/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/css/auth.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/sweetalert2.css') }}" rel="stylesheet">
 </head>
 
 <body>
@@ -54,34 +56,66 @@
     </div>
     <script src="{{ asset('template/assets/vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('template/assets/vendor/bootstrap/js/bootstrap.min.js') }}"></script>
+    <script src="{{ asset('js/sweetalert2.js') }}"></script>
 
     <script>
         $(document).ready(function() {
             $("#loginForm").submit(function(event) {
-                event.preventDefault(); // Mencegah form reload
+                event.preventDefault(); // Mencegah reload halaman
 
-                var email = $("#email").val();
-                var password = $("#password").val();
+                var formData = {
+                    email: $("input[placeholder='Enter your email or username']").val(),
+                    password: $("input[placeholder='Enter your password']").val(),
+                    _token: $('meta[name="csrf-token"]').attr("content")
+                };
+
+                // Tampilkan loading saat proses login berjalan
+                Swal.fire({
+                    title: "Memproses...",
+                    text: "Mohon tunggu sebentar.",
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
 
                 $.ajax({
-                    url: "{{ route('login') }}", // Route ke login
+                    url: "/login",
                     type: "POST",
-                    data: {
-                        _token: "{{ csrf_token() }}",
-                        email: email,
-                        password: password
-                    },
+                    data: formData,
+                    dataType: "json",
                     success: function(response) {
+                        console.log("Response dari server:", response); // Debugging
+
+                        Swal.close(); // Tutup loading
+
                         if (response.success) {
-                            window.location.href =
-                            "/dashboard"; // Redirect setelah login berhasil
+                            Swal.fire({
+                                icon: "success",
+                                title: "Login Berhasil",
+                                text: "Anda akan dialihkan...",
+                                showConfirmButton: false,
+                                timer: 2000
+                            }).then(() => {
+                                window.location.href = response.redirect;
+                            });
                         } else {
-                            $("#errorMessage").text(response.message); // Tampilkan pesan error
+                            Swal.fire({
+                                icon: "error",
+                                title: "Login Gagal",
+                                text: response.message ||
+                                    "Terjadi kesalahan, coba lagi."
+                            });
                         }
                     },
-                    error: function(xhr) {
-                        $("#errorMessage").text(
-                        "Email atau password salah."); // Tampilkan error
+                    error: function(xhr, status, error) {
+                        Swal.close(); // Tutup loading jika terjadi error
+                        console.log("Error AJAX:", xhr.responseText); // Debugging error
+                        Swal.fire({
+                            icon: "error",
+                            title: "Terjadi Kesalahan",
+                            text: "Silakan coba lagi."
+                        });
                     }
                 });
             });

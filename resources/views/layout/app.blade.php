@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title')</title>
 
     <!-- CSS -->
@@ -25,18 +26,32 @@
     <div class="wrapper">
         <nav id="sidebar">
             <div class="sidebar-header">
-                <img src="assets/img/bootstraper-logo.png" alt="bootraper logo" class="app-logo">
+                <img src="{{ asset('template/assets/img/bootstraper-logo.png') }}" alt="bootraper logo"
+                    class="app-logo">
             </div>
             <ul class="list-unstyled components text-secondary">
                 <li>
                     <a href="{{ route('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
-
                 </li>
                 <li>
-                <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false" class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group">
-                </i> MD</a>
-                <ul class="collapse list-unstyled" id="uielementsmenu">
-                    
+                    <a href="#"><i class="fas fa-file-alt"></i> Permintaan</a>
+                </li>
+                <li>
+                    <a href="#"><i class="fas fa-box-open"></i> Penerimaan</a>
+                </li>
+                <li>
+                    <a href="#"><i class="fas fa-truck"></i> Pendistribusian</a>
+                </li>
+                <li>
+                    <a href="#"><i class="fas fa-history"></i> History</a>
+                </li>
+
+                <li>
+                    <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false"
+                        class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group">
+                        </i> MD</a>
+                    <ul class="collapse list-unstyled" id="uielementsmenu">
+
                         <li>
                             <a href="{{ route('supplier') }}"><i class="fas fa-angle-right"></i> Supplier</a>
                         </li>
@@ -47,7 +62,8 @@
                             <a href="{{ route('user') }}"><i class="fas fa-angle-right"></i> User</a>
                         </li>
                         <li>
-                            <a href="{{ route('jenis-kendaraan') }}"><i class="fas fa-angle-right"></i> Jenis Kendaraan</a>
+                            <a href="{{ route('jenis-kendaraan') }}"><i class="fas fa-angle-right"></i> Jenis
+                                Kendaraan</a>
                         </li>
                         <li>
                             <a href="{{ route('lokasi') }}"><i class="fas fa-angle-right"></i>Lokasi</a>
@@ -55,7 +71,7 @@
                         <li>
                             <a href="{{ route('sp') }}"><i class="fas fa-angle-right"></i> SP</a>
                         </li>
-                    </>
+                        </>
                 </li>
         </nav>
         <div id="body" class="active">
@@ -67,9 +83,10 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="nav navbar-nav ms-auto">
                         <li class="nav-item dropdown">
-                            <div class="nav-dropdown">
-                                <a href="#" id="nav1" class="nav-item nav-link dropdown-toggle text-secondary"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
+                            {{-- <div class="nav-dropdown">
+                                <a href="#" id="nav1"
+                                    class="nav-item nav-link dropdown-toggle text-secondary" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
                                     <i class="fas fa-link"></i> <span>Quick Links</span> <i style="font-size: .8em;"
                                         class="fas fa-caret-down"></i>
                                 </a>
@@ -88,26 +105,32 @@
                                                 Roles</a></li>
                                     </ul>
                                 </div>
-                            </div>
+                            </div> --}}
                         </li>
                         <li class="nav-item dropdown">
                             <div class="nav-dropdown">
-                                <a href="#" id="nav2" class="nav-item nav-link dropdown-toggle text-secondary"
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-user"></i> <span>John Doe</span> <i style="font-size: .8em;"
-                                        class="fas fa-caret-down"></i>
+                                <a href="#" id="nav2"
+                                    class="nav-item nav-link dropdown-toggle text-secondary" data-bs-toggle="dropdown"
+                                    aria-expanded="false">
+                                    <i class="fas fa-user"></i>
+                                    <span>{{ Auth::user()->name }}</span>
+                                    <i style="font-size: .8em;" class="fas fa-caret-down"></i>
                                 </a>
                                 <div class="dropdown-menu dropdown-menu-end nav-link-menu">
                                     <ul class="nav-list">
-                                        <li><a href="" class="dropdown-item"><i class="fas fa-address-card"></i>
+                                        {{-- <li><a href="" class="dropdown-item"><i
+                                                    class="fas fa-address-card"></i>
                                                 Profile</a></li>
                                         <li><a href="" class="dropdown-item"><i class="fas fa-envelope"></i>
                                                 Messages</a></li>
                                         <li><a href="" class="dropdown-item"><i class="fas fa-cog"></i>
-                                                Settings</a></li>
-                                        <div class="dropdown-divider"></div>
-                                        <li><a href="" class="dropdown-item"><i class="fas fa-sign-out-alt"></i>
-                                                Logout</a></li>
+                                                Settings</a></li> --}}
+                                        {{-- <div class="dropdown-divider"></div> --}}
+                                        <li>
+                                            <a href="javascript:void(0)" id="logoutBtn" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt"></i> Logout
+                                            </a>
+                                        </li>
                                     </ul>
                                 </div>
                             </div>
@@ -128,8 +151,53 @@
     <script src="{{ asset('template/assets/js/script.js') }}"></script>
     <script src="{{ asset('js/sweetalert2.js') }}"></script>
 
+    <script>
+        $(document).ready(function() {
+            $("#logoutBtn").click(function(event) {
+                event.preventDefault();
+
+                Swal.fire({
+                    title: "Anda yakin ingin logout?",
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#d33",
+                    cancelButtonColor: "#3085d6",
+                    confirmButtonText: "Ya, Logout!",
+                    cancelButtonText: "Batal"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "/logout",
+                            type: "POST",
+                            data: {
+                                _token: $('meta[name="csrf-token"]').attr("content")
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: "success",
+                                    title: "Logout Berhasil",
+                                    text: "Anda akan dialihkan ke halaman login...",
+                                    timer: 2000,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    window.location.href = response.redirect;
+                                });
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    icon: "error",
+                                    title: "Terjadi Kesalahan",
+                                    text: "Gagal logout, coba lagi."
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+
     @yield('script')
 </body>
 
 </html>
-
