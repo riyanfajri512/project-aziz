@@ -14,8 +14,8 @@
                     <form id="formSP">
                         <input type="hidden" id="spId">
                         <div class="form-group mb-3">
-                            <label for="kode">Kode</label>
-                            <input type="text" class="form-control" id="kode" name="kode" required>
+                            <label for="no">No</label>
+                            <input type="text" class="form-control" id="no" name="no" required>
                         </div>
 
                         <div class="form-group mb-3">
@@ -102,7 +102,7 @@
             $(".btnEdit").click(function () {
                 $("#modalLabel").text("Edit SP");
                 $("#spId").val($(this).data("id"));
-                $("#kode").val($(this).data("kode"));
+                $("#no").val($(this).data("no")); // Ensure 'no' field is populated
                 $("#nama").val($(this).data("nama"));
                 $("#modalSP").modal("show");
             });
@@ -112,7 +112,7 @@
                 e.preventDefault();
 
                 let id = $("#spId").val();
-                let kode = $("#kode").val();
+                let no = $("#no").val(); // Correctly retrieve 'no' field value
                 let nama = $("#nama").val();
 
                 let url = id ? `/sp/update/${id}` : "/sp/store";
@@ -123,7 +123,7 @@
                     type: type,
                     data: {
                         id: id,
-                        kode: kode,
+                        no: no, 
                         nama: nama,
                         _token: "{{ csrf_token() }}"
                     },

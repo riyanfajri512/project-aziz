@@ -60,14 +60,14 @@
                                                 <td>{{ $jenis->nama }}</td>
                                                 <td>{{ $jenis->alamat }}</td>
                                                 <td>
-                                                    <button class="btn btn-warning btn-sm btnEditSupplier"
+                                                    <button class="btn btn-primary btn-sm btnEditSupplier"
                                                         data-id="{{ $jenis->id }}">Edit</button>
                                                     <button class="btn btn-danger btn-sm btnDeleteSupplier"
                                                         data-id="{{ $jenis->id }}">Hapus</button>
                                                 </td>
                                             </tr>
                                         @endforeach
-                                    </tbody>
+                                    </tbody>    
                                 </table>
                             </div>
                         </div>
@@ -83,7 +83,7 @@
 @section('script')
     <script>
         $(document).ready(function () {
-            $('.supplierTable').DataTable({
+            $('#supplierTable').DataTable({
                 "paging": true,
                 "lengthChange": true,
                 "searching": true,

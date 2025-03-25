@@ -61,7 +61,7 @@
                                                 <td>{{ $jenis->nama }}</td>
                                                 <td>
                                                     <button class="btn btn-primary btnEdit" data-id="{{ $jenis->id }}"
-                                                        data-no="{{ $jenis->no }}" data-nama="{{ $jenis->nama }}">Edit</button>
+                                                        data-kode="{{ $jenis->no }}" data-nama="{{ $jenis->nama }}">Edit</button>
                                                     <button class="btn btn-danger btnDelete"
                                                         data-id="{{ $jenis->id }}">Hapus</button>
                                                 </td>
@@ -102,8 +102,8 @@
             $(".btnEdit").click(function () {
                 $("#modalLabel").text("Edit Kategori");
                 $("#kategoriId").val($(this).data("id"));
-                $("#kode").val($(this).data("kode"));
-                $("#nama").val($(this).data("nama"));
+                $("#kode").val($(this).data("kode")); 
+                $("#kategori").val($(this).data("nama")); 
                 $("#modalKategori").modal("show");
             });
 
