@@ -37,7 +37,7 @@
                     <a href="{{ route('permintaan.index') }}"><i class="fas fa-file-alt"></i> Permintaan</a>
                 </li>
                 <li>
-                    <a href="#"><i class="fas fa-box-open"></i> Penerimaan</a>
+                    <a href="{{ route('penerimaan') }}"><i class="fas fa-box-open"></i> Penerimaan</a>
                 </li>
                 <li>
                     <a href="#"><i class="fas fa-truck"></i> Pendistribusian</a>

@@ -5,6 +5,7 @@ use App\Http\Controllers\JenisKendaraanController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LokasiController;
 use App\Http\Controllers\PermintaanController;
+use App\Http\Controllers\PenerimaanController;
 use App\Http\Controllers\SpController;
 use App\Http\Controllers\SupplierController;
 use App\Http\Controllers\UserController;
@@ -24,7 +25,15 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
     Route::get('/permintaan/tambah', [PermintaanController::class, 'tambah'])->name('permintaan.formtambah');
 
-    // Jenis Kendaraan
+    //Permintaan
+    Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
+    Route::get('/permintaan/tambah', [PermintaanController::class, 'tambah'])->name('permintaan.formtambah');
+
+    // Penerimaan
+    Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan');
+    Route::get('/penerimaan/tambah', [PenerimaanController::class, 'tambah'])->name('penerimaan.tambahan');
+
+    // Jenis JenisKendaraanController
     Route::get('/jeniskendaraan', [JenisKendaraanController::class, 'index'])->name('jenis-kendaraan');
     Route::post('/jeniskendaraan/store', [JenisKendaraanController::class, 'store']);
     Route::put('/jeniskendaraan/update/{id}', [JenisKendaraanController::class, 'update']);
