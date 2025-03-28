@@ -26,8 +26,11 @@
     <div class="wrapper">
         <nav id="sidebar">
             <div class="sidebar-header">
-                <img src="{{ asset('template/assets/img/bootstraper-logo.png') }}" alt="bootraper logo"
-                    class="app-logo">
+                <div class="container">
+                    <img src="{{ asset('template/assets/img/logo_indomaret.png') }}"
+                    style="width: 150px; height: auto;"
+                         alt="bootraper logo" class="app-logo">
+                </div>
             </div>
             <ul class="list-unstyled components text-secondary">
                 <li>
@@ -76,7 +79,7 @@
         </nav>
         <div id="body" class="active">
             <!-- navbar navigation component -->
-            <nav class="navbar navbar-expand-lg navbar-white bg-white">
+            <nav style="height: 85px" class="navbar navbar-expand-lg navbar-white bg-white">
                 <button type="button" id="sidebarCollapse" class="btn btn-light">
                     <i class="fas fa-bars"></i><span></span>
                 </button>

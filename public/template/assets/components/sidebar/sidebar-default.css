@@ -11,17 +11,30 @@
     color: #fff;
     transition: all 0.3s;
     border-right: 1px solid #e6ecf5;
+    overflow-y: auto; /* Untuk handle konten tinggi */
 }
+
+#sidebar .sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(101, 109, 119, .16);
+    min-height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#sidebar .sidebar-header .container {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 
 #sidebar.active {
     margin-left: -250px;
 }
 
-#sidebar .sidebar-header {
-    padding: .4rem 1rem;
-    border-bottom: 1px solid rgba(101, 109, 119, .16);
-    max-height: 55px;
-}
 
 #sidebar ul.components {
     padding: 0 0;

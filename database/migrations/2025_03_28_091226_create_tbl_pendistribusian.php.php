@@ -19,6 +19,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('sparepart_dis_id');
             $table->timestamps();
+        });
     }
 
     /**
