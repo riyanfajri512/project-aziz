@@ -15,17 +15,17 @@
                         <input type="hidden" id="supplierId">
                         <div class="form-group mb-3">
                             <label for="nama">Nama Supplier</label>
-                            <input type="text" class="form-control" id="nama" name="nama" required>
+                            <input type="text" class="form-control" id="nama" placeholder="Masukan Deskripsi" name="nama" required>
                         </div>
 
-                            <div class="form-group mb-3">
-                                <label for="alamat">Alamat</label>
-                                <input type="text" class="form-control" id="alamat" name="alamat" required>
-                            </div>
+                        <div class="form-group mb-3">
+                            <label for="alamat">Alamat</label>
+                            <input type="text" class="form-control" id="alamat" placeholder="Masukan Deskripsi" name="alamat" required>
+                        </div>
 
-                            <div class="d-grid">
-                                <button type="submit" class="btn btn-primary">Simpan</button>
-                            </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">Simpan</button>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -44,8 +44,8 @@
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
-                                <table class= "table" id="supplierTable">
-                                    <thead>
+                                <table class="table" id="supplierTable">
+                                    <thead class="table-dark">
                                         <tr>
                                             <th>No</th>
                                             <th>Nama Supplier</th>

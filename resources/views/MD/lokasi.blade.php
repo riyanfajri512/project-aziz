@@ -16,21 +16,21 @@
 
                         <div class="form-group mb-3">
                             <label for="nama">Nama</label>
-                            <input type="text" class="form-control" id="nama" name="nama" required>
+                            <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukan Deskripsi" required>
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="unit">Unit</label>
-                            <input type="text" class="form-control" id="unit" name="unit" required>
+                            <input type="text" class="form-control" id="unit" name="unit" placeholder="Masukan Deskripsi" required>
                         </div>
                         <div class="form-group mb-3">
                             <label for="cabang">Cabang</label>
-                            <input type="text" class="form-control" id="cabang" name="cabang" required>
+                            <input type="text" class="form-control" id="cabang" name="cabang" placeholder="Masukan Deskripsi" required>
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="alamat">Alamat</label>
-                            <input type="text" class="form-control" id="alamat" name="alamat" required>
+                            <input type="text" class="form-control" id="alamat" name="alamat" placeholder="Masukan Deskripsi" required>
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">Simpan</button>
@@ -54,7 +54,7 @@
                             <button id="btnTambahLokasi" class="btn btn-primary mb-3">Tambah Lokasi</button>
                             <div class="table-responsive">
                                 <table class="table" id="lokasiTable">
-                                    <thead>
+                                    <thead class="table-dark">
                                         <tr>
                                             <th>No</th>
                                             <th>Nama</th>
@@ -74,8 +74,7 @@
                                                 <td>{{ $jenis->alamat }}</td>
                                                 <td>
                                                     <button class="btn btn-primary btnEdit" data-id="{{ $jenis->id }}"
-                                                        data-nama="{{ $jenis->nama }}"
-                                                        data-unit="{{ $jenis->unit }}"
+                                                        data-nama="{{ $jenis->nama }}" data-unit="{{ $jenis->unit }}"
                                                         data-cabang="{{ $jenis->cabang }}"
                                                         data-alamat="{{ $jenis->alamat }}">Edit</button>
                                                     <button class="btn btn-danger btnDelete"
@@ -120,7 +119,7 @@
             });
 
             // Save Data (Add/Edit)
-            $("#formLokasi").submit(function (e) { 
+            $("#formLokasi").submit(function (e) {
                 e.preventDefault();
 
                 let id = $("#lokasiId").val();

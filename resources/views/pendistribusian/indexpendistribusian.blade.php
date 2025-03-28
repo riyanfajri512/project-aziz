@@ -18,37 +18,33 @@
                                 <input type="date" class="form-control" placeholder="Filter Tanggal">
                             </div>
                             <div>
-                                <a href="{{ route('penerimaan.tambahan') }}" class="btn btn-primary">Tambah Penerimaan</a>
+                                <a href="{{ route('pendistribusian.tambah') }}" class="btn btn-primary">Tambah Penerimaan</a>
                             </div>
                         </div>
                     </div>
                     <div class="card-body">
                         <div class="table-responsive" style="overflow-x: auto;">
-                            <table class="table table-striped table-hover" id="tabelPenerimaan"
+                            <table class="table table-striped table-hover" id="tabelPendistribusian"
                                 style="width: max-content; min-width: 100%;">
                                 <thead class="table-dark">
                                     <tr>
                                         <th>No</th>
-                                        <th>Permintaan ID</th>
+                                        <th>Kode Distribusi</th>
+                                        <th>Penerimaan ID</th>
                                         <th>User ID</th>
-                                        <th>Deskripsi</th>
+                                        <th>Sparepart Distribusi ID</th>
                                         <th>Jumlah</th>
-                                        <th>Balance</th>
-                                        <th>Harga</th>
-                                        <th>Total</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
                                         <td>1</td>
+                                        <td>D001</td>
                                         <td>1001</td>
                                         <td>U001</td>
-                                        <td>Sparepart Mesin A</td>
-                                        <td>5</td>
-                                        <td>10</td>
-                                        <td>150000</td>
-                                        <td>750000</td>
+                                        <td>SPD001</td>
+                                        <td>2</td> <!-- Jumlah yang mengurangi balance -->
                                         <td>
                                             <button class="btn btn-primary btn-sm">Edit</button>
                                             <button class="btn btn-danger btn-sm">Delete</button>
@@ -56,13 +52,11 @@
                                     </tr>
                                     <tr>
                                         <td>2</td>
+                                        <td>D002</td>
                                         <td>1002</td>
                                         <td>U002</td>
-                                        <td>Sparepart Mesin B</td>
+                                        <td>SPD002</td>
                                         <td>3</td>
-                                        <td>8</td>
-                                        <td>200000</td>
-                                        <td>600000</td>
                                         <td>
                                             <button class="btn btn-primary btn-sm">Edit</button>
                                             <button class="btn btn-danger btn-sm">Delete</button>
@@ -76,7 +70,6 @@
             </div>
         </div>
     </div>
-
 @endsection
 @section('script')
 

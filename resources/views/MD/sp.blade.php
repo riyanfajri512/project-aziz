@@ -15,18 +15,18 @@
                         <input type="hidden" id="spId">
                         <div class="form-group mb-3">
                             <label for="no">No</label>
-                            <input type="text" class="form-control" id="no" name="no" required>
+                            <input type="text" class="form-control" id="no" placeholder="Masukan Deskripsi" name="no" required>
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="nama">Nama</label>
-                            <input type="text" class="form-control" id="nama" name="nama" required>
+                            <input type="text" class="form-control" id="nama" name="nama" placeholder="Masukan Deskripsi" required>
                         </div>
 
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary">Simpan</button>
                         </div>
-                    </form>     
+                    </form>
                 </div>
             </div>
         </div>
@@ -40,12 +40,12 @@
                 <div class="col-md-12 col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                        <button id="btnSP" class="btn btn-primary">Tambah SP</button>
+                            <button id="btnSP" class="btn btn-primary">Tambah SP</button>
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table" id="spTable">
-                                    <thead>
+                                    <thead class="table-dark">
                                         <tr>
                                             <th>No</th>
                                             <th>Kode</th>
@@ -76,7 +76,7 @@
             </div>
         </div>
     </div>
-    
+
 @endsection
 
 @section('script')
@@ -123,7 +123,7 @@
                     type: type,
                     data: {
                         id: id,
-                        no: no, 
+                        no: no,
                         nama: nama,
                         _token: "{{ csrf_token() }}"
                     },

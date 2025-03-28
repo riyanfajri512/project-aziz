@@ -16,12 +16,12 @@
 
                         <div class="form-group mb-3">
                             <label for="nama">Nama Kendaraan</label>
-                            <input type="text" class="form-control" id="nama" required>
+                            <input type="text" class="form-control" id="nama" placeholder="Masukan Deskripsi" required>
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="singkatan">Singkatan</label>
-                            <input type="text" class="form-control" id="singkatan" required>
+                            <input type="text" class="form-control" id="singkatan" placeholder="Masukan Deskripsi" required>
                         </div>
 
                         <div class="d-grid">
@@ -47,7 +47,7 @@
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table" id="jenisKendaraanTable">
-                                    <thead>
+                                    <thead class="table-dark">
                                         <tr>
                                             <th>No.</th>
                                             <th>Nama</th>

@@ -15,12 +15,12 @@
                         <input type="hidden" id="kategoriId">
                         <div class="form-group mb-3">
                             <label for="kode">Kode</label>
-                            <input type="text" class="form-control" id="kode" required>
+                            <input type="text" class="form-control" id="kode" placeholder="Masukan Deskripsi" required>
                         </div>
 
                         <div class="form-group mb-3">
                             <label for="kategori">Nama Kategori</label>
-                            <input type="text" class="form-control" id="kategori" required>
+                            <input type="text" class="form-control" id="kategori" placeholder="Masukan Deskripsi" required>
                         </div>
 
                         <div class="d-grid">
@@ -45,7 +45,7 @@
                         <div class="card-body">
                             <div class="table-responsive">
                                 <table class="table" id="kategoriTable">
-                                    <thead>
+                                    <thead class="table-dark">
                                         <tr>
                                             <th>No.</th>
                                             <th>Kode</th>

@@ -4,6 +4,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\JenisKendaraanController;
 use App\Http\Controllers\KategoriController;
 use App\Http\Controllers\LokasiController;
+use App\Http\Controllers\PendistibusianController;
 use App\Http\Controllers\PermintaanController;
 use App\Http\Controllers\PenerimaanController;
 use App\Http\Controllers\SpController;
@@ -25,13 +26,13 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
     Route::get('/permintaan/tambah', [PermintaanController::class, 'tambah'])->name('permintaan.formtambah');
 
-    //Permintaan
-    Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
-    Route::get('/permintaan/tambah', [PermintaanController::class, 'tambah'])->name('permintaan.formtambah');
-
     // Penerimaan
     Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan');
     Route::get('/penerimaan/tambah', [PenerimaanController::class, 'tambah'])->name('penerimaan.tambahan');
+
+    // pendistribusian
+    Route::get('/pendistribusian', [PendistibusianController::class, 'index'])->name('pendistribusian');
+    Route::get('/pendistribusian/tambah', [PendistibusianController::class, 'tambah'])->name('pendistribusian.tambah');
 
     // Jenis JenisKendaraanController
     Route::get('/jeniskendaraan', [JenisKendaraanController::class, 'index'])->name('jenis-kendaraan');

@@ -14,7 +14,7 @@
                             <p class="card-title">Add class <code>.table</code> inside table element</p>
                             <div class="table-responsive">
                                 <table class="table">
-                                    <thead>
+                                    <thead class="table-dark">
                                         <tr>
                                             <th>Nama</th>
                                             <th>Role</th>
@@ -42,7 +42,7 @@
             </div>
         </div>
     </div>
-        </div>
+    </div>
     </div>
 
 
