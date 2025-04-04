@@ -17,13 +17,6 @@
                                 <input type="date" id="filterTanggal" class="form-control d-inline-block"
                                     style="width: auto;">
 
-                                <label for="filterStatus" class="ms-3">Status: </label>
-                                <select id="filterStatus" class="form-control d-inline-block" style="width: auto;">
-                                    <option value="">Semua</option>
-                                    <option value="Pending">Pending</option>
-                                    <option value="Approved">Approved</option>
-                                    <option value="Rejected">Rejected</option>
-                                </select>
                             </div>
                             <a href="{{ route('permintaan.formtambah') }}" class="btn btn-primary">Tambah Permintaan</a>
                         </div>
@@ -44,7 +37,6 @@
                                             <th style="width: 200px;">Deskripsi/Catatan</th>
                                             <th style="width: 150px;">File</th>
                                             <th style="width: 100px;">Sp ID</th>
-                                            <th style="width: 100px;">Status</th>
                                             <th style="width: 150px;">Suplier ID</th>
                                             <th style="width: 150px;">Sparepart ID</th>
                                             <th style="width: 150px;">Action</th>
@@ -62,7 +54,6 @@
                                             <td>Pengadaan sparepart baru</td>
                                             <td>file.pdf</td>
                                             <td>SP123</td>
-                                            <td>Pending</td>
                                             <td>SPL001</td>
                                             <td>SPP456</td>
                                             <td><button class="btn btn-sm btn-primary">Edit</button> <button
@@ -79,7 +70,6 @@
                                             <td>Perbaikan mesin</td>
                                             <td>file2.pdf</td>
                                             <td>SP124</td>
-                                            <td>Approved</td>
                                             <td>SPL002</td>
                                             <td>SPP457</td>
                                             <td><button class="btn btn-sm btn-primary">Edit</button> <button

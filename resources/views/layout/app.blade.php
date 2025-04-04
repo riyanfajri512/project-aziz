@@ -72,7 +72,7 @@
                             <a href="{{ route('lokasi') }}"><i class="fas fa-angle-right"></i>Lokasi</a>
                         </li>
                         <li>
-                            <a href="{{ route('sp') }}"><i class="fas fa-angle-right"></i> SP</a>
+                            <a href="{{ route('sp') }}"><i class="fas fa-angle-right"></i> Sparepart</a>
                         </li>
                         </>
                 </li>
