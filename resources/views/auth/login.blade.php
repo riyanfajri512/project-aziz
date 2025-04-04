@@ -24,7 +24,8 @@
             <div class="card">
                 <div class="card-body text-center">
                     <div class="mb-4">
-                        <img class="brand" src="assets/img/bootstraper-logo.png" alt="bootstraper logo">
+                        <img src="{{ asset('template/assets/img/logo_indomaret.png') }}"
+                            style="width: 150px; height: auto;" alt="bootraper logo" class="app-logo">
                     </div>
                     <h6 class="mb-4 text-muted">Login to your account</h6>
                     <form id="loginForm">
