@@ -33,6 +33,7 @@
                                         <th>User ID</th>
                                         <th>Deskripsi</th>
                                         <th>Jumlah</th>
+                                        <th>Tanggal</th>
                                         <th>Balance</th>
                                         <th>Harga</th>
                                         <th>Total</th>
@@ -46,6 +47,7 @@
                                         <td>U001</td>
                                         <td>Sparepart Mesin A</td>
                                         <td>5</td>
+                                        <td>2023-10-01</td>
                                         <td>10</td>
                                         <td>150000</td>
                                         <td>750000</td>
@@ -60,6 +62,7 @@
                                         <td>U002</td>
                                         <td>Sparepart Mesin B</td>
                                         <td>3</td>
+                                        <td>2023-10-02</td>
                                         <td>8</td>
                                         <td>200000</td>
                                         <td>600000</td>

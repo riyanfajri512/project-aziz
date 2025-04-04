@@ -67,15 +67,6 @@
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">Status</label>
-                                            <select class="form-control" name="status">
-                                                <option value="">Pilih Status</option>
-                                                <option value="Pending">Pending</option>
-                                                <option value="Approved">Approved</option>
-                                            </select>
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
-                                        </div>
-                                        <div class="mb-3">
                                             <label class="form-label">Suplier ID</label>
                                             <input type="text" class="form-control" name="suplier_id">
                                             <small class="text-danger d-none">Field ini wajib diisi</small>

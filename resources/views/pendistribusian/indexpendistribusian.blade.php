@@ -6,7 +6,7 @@
     <div class="content">
         <div class="container">
             <div class="page-title">
-                <h3>Penerimaan</h3>
+                <h3>Pendistribusian</h3>
             </div>
         </div>
         <div class="row">
@@ -18,7 +18,7 @@
                                 <input type="date" class="form-control" placeholder="Filter Tanggal">
                             </div>
                             <div>
-                                <a href="{{ route('pendistribusian.tambah') }}" class="btn btn-primary">Tambah Penerimaan</a>
+                                <a href="{{ route('pendistribusian.tambah') }}" class="btn btn-primary">Tambah Pendistribusian</a>
                             </div>
                         </div>
                     </div>
@@ -29,11 +29,11 @@
                                 <thead class="table-dark">
                                     <tr>
                                         <th>No</th>
-                                        <th>Kode Distribusi</th>
-                                        <th>Penerimaan ID</th>
-                                        <th>User ID</th>
+                                        <th>Kode Perbaikan</th>
+                                        <th>User</th>
                                         <th>Sparepart Distribusi ID</th>
                                         <th>Jumlah</th>
+                                        <th>Plat Nomor</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
