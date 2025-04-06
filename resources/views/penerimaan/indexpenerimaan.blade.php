@@ -30,7 +30,7 @@
                                     <tr>
                                         <th>No</th>
                                         <th>Permintaan ID</th>
-                                        <th>User ID</th>
+                                        <th>Unit</th>
                                         <th>Deskripsi</th>
                                         <th>Jumlah</th>
                                         <th>Tanggal</th>

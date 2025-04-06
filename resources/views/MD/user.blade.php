@@ -15,11 +15,18 @@
                         <input type="hidden" id="userId" name="id">
                         <div class="form-group mb-3">
                             <label for="name">Nama</label>
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Masukkan name" required>
+                            <input type="text" class="form-control" id="name" name="name" placeholder="Masukkan name"
+                                required>
                         </div>
                         <div class="form-group mb-3">
                             <label for="email">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email" required>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Masukkan email"
+                                required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="password">Password</label>
+                            <input type="password" class="form-control" id="password" name="password"
+                                placeholder="Masukkan password" required>
                         </div>
                         <div class="form-group mb-3">
                             <label for="role">Role</label>
@@ -61,12 +68,13 @@
                                             <th>Nama</th>
                                             <th>Email</th>
                                             <th>Role</th>
+                                            <th>Status</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach ($users as $user)
-                                            <tr>
+                                            <tr class="{{ $user->deleted_at ? 'table-danger' : '' }}">
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $user->name }}</td>
                                                 <td>{{ $user->email }}</td>
@@ -76,22 +84,38 @@
                                                     </span>
                                                 </td>
                                                 <td>
+                                                    @if($user->deleted_at)
+                                                        <span class="badge bg-danger">Deleted</span>
+                                                    @else
+                                                        <span class="badge bg-success">Active</span>
+                                                    @endif
+                                                </td>
+                                                <td>
                                                     <div class="btn-group" role="group">
-                                                        <button class="btn btn-sm btn-primary btn-edit" 
-                                                            data-id="{{ $user->id }}" 
-                                                            data-name="{{ $user->name }}"
-                                                            data-email="{{ $user->email }}"
-                                                            data-role="{{ $user->role }}">
-                                                            <i class="fas fa-edit"></i>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-danger btn-delete" 
-                                                            data-id="{{ $user->id }}">
-                                                            <i class="fas fa-trash"></i>
-                                                        </button>
-                                                        <button class="btn btn-sm btn-warning btn-reset" 
-                                                            data-id="{{ $user->id }}">
-                                                            <i class="fas fa-key"></i>
-                                                        </button>
+                                                        @if(!$user->deleted_at)
+                                                            <button class="btn btn-sm btn-primary btn-edit"
+                                                                data-id="{{ $user->id }}" data-name="{{ $user->name }}"
+                                                                data-email="{{ $user->email }}" data-role="{{ $user->role }}">
+                                                                <i class="fas fa-edit"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-danger btn-delete"
+                                                                data-id="{{ $user->id }}">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-warning btn-reset"
+                                                                data-id="{{ $user->id }}">
+                                                                <i class="fas fa-key"></i>
+                                                            </button>
+                                                        @else
+                                                            <button class="btn btn-sm btn-success btn-restore"
+                                                                data-id="{{ $user->id }}">
+                                                                <i class="fas fa-undo"></i>
+                                                            </button>
+                                                            <button class="btn btn-sm btn-danger btn-force-delete"
+                                                                data-id="{{ $user->id }}">
+                                                                <i class="fas fa-trash-alt"></i>
+                                                            </button>
+                                                        @endif
                                                     </div>
                                                 </td>
                                             </tr>
@@ -107,42 +131,30 @@
     </div>
 @endsection
 
-@push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    $(document).ready(function () {
-        // Inisialisasi DataTable
-        $('#userTable').DataTable({
-            responsive: true,
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.11.5/i18n/id.json'
-            }
-        });
+@section('script')
 
-        // Modal tambah user
-        $('#btnAddUser').on('click', function() {
+
+    <script>
+        $('#btnAddUser').on('click', function () {
             $('#modalLabel').text('Tambah User Baru');
             $('#formUser')[0].reset();
             $('#userId').val('');
             $('#modalUser').modal('show');
         });
-
         // Submit form
-        $('#formUser').on('submit', function(e) {
+        $('#formUser').on('submit', function (e) {
             e.preventDefault();
-            
+
             let formData = $(this).serialize();
             let userId = $('#userId').val();
-            let url = userId ? '/users/' + userId : '/users';
+            let url = userId ? '/user/update/' + userId : '/user/store';
             let method = userId ? 'PUT' : 'POST';
 
             $.ajax({
                 url: url,
                 type: method,
                 data: formData,
-                success: function(response) {
+                success: function (response) {
                     Swal.fire({
                         icon: 'success',
                         title: 'Berhasil',
@@ -153,11 +165,11 @@
                         location.reload();
                     });
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     let errors = xhr.responseJSON.errors;
                     if (errors) {
                         let errorMessages = '';
-                        $.each(errors, function(key, value) {
+                        $.each(errors, function (key, value) {
                             errorMessages += value + '<br>';
                         });
                         Swal.fire({
@@ -177,7 +189,7 @@
         });
 
         // Edit user
-        $(document).on('click', '.btn-edit', function() {
+        $(document).on('click', '.btn-edit', function () {
             $('#modalLabel').text('Edit User');
             $('#userId').val($(this).data('id'));
             $('#name').val($(this).data('name'));
@@ -187,9 +199,9 @@
         });
 
         // Delete user
-        $(document).on('click', '.btn-delete', function() {
+        $(document).on('click', '.btn-delete', function () {
             let userId = $(this).data('id');
-            
+
             Swal.fire({
                 title: 'Apakah Anda yakin?',
                 text: "Data user akan dihapus permanen!",
@@ -202,12 +214,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/users/' + userId,
+                        url: '/user/destroy/' + userId,
                         type: 'DELETE',
                         data: {
                             _token: '{{ csrf_token() }}'
                         },
-                        success: function(response) {
+                        success: function (response) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
@@ -217,7 +229,7 @@
                                 location.reload();
                             });
                         },
-                        error: function(xhr) {
+                        error: function (xhr) {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Gagal',
@@ -230,9 +242,9 @@
         });
 
         // Reset password
-        $(document).on('click', '.btn-reset', function() {
+        $(document).on('click', '.btn-reset', function () {
             let userId = $(this).data('id');
-            
+
             Swal.fire({
                 title: 'Reset Password',
                 text: "Password akan direset ke default (password123)",
@@ -245,12 +257,12 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     $.ajax({
-                        url: '/users/' + userId + '/reset-password',
+                        url: '/user/' + userId + '/reset-password',
                         type: 'POST',
                         data: {
                             _token: '{{ csrf_token() }}'
                         },
-                        success: function(response) {
+                        success: function (response) {
                             Swal.fire({
                                 icon: 'success',
                                 title: 'Berhasil',
@@ -258,7 +270,7 @@
                                 timer: 1500
                             });
                         },
-                        error: function(xhr) {
+                        error: function (xhr) {
                             Swal.fire({
                                 icon: 'error',
                                 title: 'Gagal',
@@ -269,6 +281,8 @@
                 }
             });
         });
-    });
-</script>
-@endpush
+
+
+       
+    </script>
+@endsection

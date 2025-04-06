@@ -1,5 +1,5 @@
 @extends('layout.app')
-@section('title', 'Master Data')
+@section('title', 'Jenis Kendaraan')
 
 @section('main')
     <!-- Modal -->

@@ -74,6 +74,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/user/store', [UserController::class, 'store']);
     Route::put('/user/update/{id}', [UserController::class, 'update']);
     Route::delete('/user/destroy/{id}', [UserController::class, 'destroy']);
+    Route::post('/{id}/reset-password', [UserController::class, 'resetPassword'])->name('user.reset-password');
+    Route::post('/{id}/restore', [UserController::class, 'restore'])->name('user.restore');
+    Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('user.force-delete');
 });
 
 
