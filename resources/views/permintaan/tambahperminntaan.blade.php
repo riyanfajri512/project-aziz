@@ -31,6 +31,46 @@
         }
     </style>
 
+    <div class="modal fade" id="searchSparepartModal" tabindex="-1" role="dialog" aria-labelledby="searchSparepartModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchSparepartModalLabel">Cari Sparepart yang Pernah Dibuat</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="searchSparepartInput">Cari Sparepart:</label>
+                        <input type="text" class="form-control" id="searchSparepartInput"
+                            placeholder="Masukkan kode atau nama sparepart...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Kode</th>
+                                    <th>Nama</th>
+                                    <th>Jenis Kendaraan</th>
+                                    <th>Harga</th>
+                                    <th>Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sparepartSearchResults">
+                                <!-- Hasil pencarian akan muncul di sini -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="content">
         <div class="container">
             <div class="page-title">
@@ -56,13 +96,19 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Unit (Pembuat)</label>
-                                            <input type="text" class="form-control" name="unit" value="admin"
-                                                readonly>
+                                            <input type="text" class="form-control" name="unit"
+                                                value="{{ Auth::user()->name }}" readonly>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Cabang</label>
-                                            <input type="text" class="form-control" name="cabang">
+                                            <select name="lokasi_id" id="lokasi" class="form-control" disabled>
+                                                @foreach ($lokasiList as $lokasi)
+                                                    <option value="{{ $lokasi->id }}" {{ $loop->first ? 'selected' : '' }}>
+                                                        {{ $lokasi->nama }} - {{ $lokasi->unit }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
                                         <div class="mb-3">
@@ -79,27 +125,15 @@
                                         </div>
 
                                         <div class="mb-3">
-                                            <label class="form-label">Lokasi</label>
-                                            <select class="form-select" name="lokasi" id="lokasi" required>
-                                                <option value="" selected disabled>-- Pilih Lokasi --</option>
-                                                <option value="gudang_utama">Gudang Utama</option>
-                                                <option value="gudang_cabang">Gudang Cabang</option>
-                                                <option value="showroom">Showroom</option>
-                                                <option value="workshop">Workshop</option>
-                                                <option value="kantor">Kantor</option>
-                                                <option value="lainnya">Lainnya</option>
-                                            </select>
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
-                                        </div>
-
-                                        <div class="mb-3">
                                             <label class="form-label">Suplier</label>
                                             <select class="form-select" name="suplier_id" required>
                                                 <option value="" selected disabled>-- Pilih Suplier --</option>
-                                                <option value="1">PT Sumber Makmur</option>
-                                                <option value="2">CV Tekno Mandiri</option>
-                                                <option value="3">UD Sparepart Jaya</option>
-                                                <!-- Tambahkan data lain sesuai kebutuhan -->
+                                                suplierList
+                                                @foreach ($suplierList as $supplier)
+                                                <option value="{{ $supplier->id }}">
+                                                    {{ $supplier->nama }}
+                                                </option>
+                                            @endforeach
                                             </select>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div> >
@@ -131,16 +165,20 @@
                                         </div>
                                     </div>
 
+                                    <datalist id="sparepart-list">
+                                        <!-- Akan diisi dengan history kode sparepart -->
+                                    </datalist>
+
                                     <div class="table-responsive">
                                         <table class="table mt-3">
                                             <thead class="thead-light">
                                                 <tr>
-                                                    <th scope="col">Jenis Kendaraaan</th>
-                                                    <th scope="col">Kode Kendaraaan</th>
-                                                    <th scope="col">Sparepart</th>
+                                                    <th scope="col">Kode Sparepart</th>
+                                                    <th scope="col">Jenis Kendaraan</th>
+                                                    <th scope="col">Nama Sparepart</th>
                                                     <th scope="col" class="text-center">Qty</th>
-                                                    <th scope="col" class="text-right">Harga</th>
-                                                    <th scope="col" class="text-right">Total</th>
+                                                    <th scope="col" class="text-right">Harga per Pcs</th>
+                                                    <th scope="col" class="text-right">Total Harga</th>
                                                     <th scope="col" class="text-center">Action</th>
                                                 </tr>
                                             </thead>
@@ -149,13 +187,13 @@
                                             </tbody>
                                             <tfoot>
                                                 <tr>
-                                                    <td colspan="3">
-                                                        <button type="button" class="btn btn-primary" id="add-item-button"
-                                                            aria-label="Add new item">
-                                                            <i class="fas fa-plus mr-2"></i>Add Item
+                                                    <td colspan="5">
+                                                        <button type="button" class="btn btn-primary"
+                                                            id="add-item-button">
+                                                            <i class="fas fa-plus mr-2"></i>Tambah Item
                                                         </button>
                                                     </td>
-                                                    <td class="text-right">
+                                                    <td class="text-right" colspan="2">
                                                         <div class="form-group mb-0">
                                                             <label for="total_payment" class="font-weight-bold mb-0">Total
                                                                 Harga:</label>
@@ -165,7 +203,7 @@
                                                                 </div>
                                                                 <input type="text" class="form-control text-right"
                                                                     id="total_payment" name="total_payment"
-                                                                    value="0" readonly aria-label="Total price">
+                                                                    value="0" readonly>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -204,7 +242,76 @@
 @endsection
 @section('script')
     <script>
+        let sparepartHistory = [{
+                kode: "MOT-001",
+                jenis: "Motor",
+                nama: "Kampas Rem",
+                harga: 50000
+            },
+            {
+                kode: "MOB-001",
+                jenis: "Mobil",
+                nama: "Filter Oli",
+                harga: 75000
+            }
+        ];
+
+        function updateTotal() {
+            let total = 0;
+            $('#items-container tr').each(function() {
+                let qty = parseInt($(this).find('.qty').val()) || 0;
+                let harga = parseInt($(this).find('.harga').val()) || 0;
+                total += qty * harga;
+            });
+            $('#total_payment').val(total.toLocaleString('id-ID'));
+        }
+
+        function slugify(str) {
+            return str.toUpperCase().replace(/\s+/g, '-').replace(/[^A-Z0-9-]/g, '');
+        }
+
+        function generateKode(jenis) {
+            let prefix = jenis.substring(0, 3).toUpperCase();
+
+            // Hitung jumlah sparepart dengan jenis yang sama
+            let count = sparepartHistory.filter(sp => sp.jenis === jenis).length + 1;
+
+            return `${prefix}-${count.toString().padStart(3, '0')}`;
+        }
+
+        function generateRow() {
+            return `
+        <tr>
+            <td><input type="text" class="form-control kode" list="sparepart-list"></td>
+            <td>
+                <select class="form-control jenis">
+                    <option value="">Pilih</option>
+                    <option value="Mobil">Mobil</option>
+                    <option value="Motor">Motor</option>
+                </select>
+            </td>
+            <td><input type="text" class="form-control nama"></td>
+            <td class="text-center"><input type="number" class="form-control qty" min="1" value="1"></td>
+            <td class="text-right"><input type="number" class="form-control harga text-right" value="0"></td>
+            <td class="text-right"><input type="text" class="form-control total text-right" value="0" readonly></td>
+            <td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button></td>
+        </tr>
+    `;
+        }
+
+        function populateDatalist() {
+            let datalist = $('#sparepart-list');
+            datalist.empty();
+            sparepartHistory.forEach(sp => {
+                datalist.append(`<option value="${sp.kode}">${sp.nama} - ${sp.jenis}</option>`);
+            });
+        }
+
+
         $(document).ready(function() {
+
+
+            populateDatalist();
 
             // Preview PDF sebelum upload
             $('input[name="file"]').change(function(e) {
@@ -249,124 +356,64 @@
             }
 
 
-            addNewItem();
-
-            // Event listener untuk tombol tambah item
-            $('#add-item-button').click(function() {
-                addNewItem();
+            $('#add-item-button').on('click', function() {
+                $('#items-container').append(generateRow());
             });
 
-            // Event delegation untuk menghapus item
-            $(document).on('click', '.remove-item', function() {
-                $(this).closest('tr').remove();
-                calculateTotal();
+            $('#items-container').on('input', '.qty, .harga', function() {
+                let row = $(this).closest('tr');
+                let qty = parseInt(row.find('.qty').val()) || 0;
+                let harga = parseInt(row.find('.harga').val()) || 0;
+                let total = qty * harga;
+                row.find('.total').val(total.toLocaleString('id-ID'));
+                updateTotal();
+            });
 
-                // Jika tidak ada item tersisa, tambahkan satu baris baru
-                if ($('#items-container tr').length === 0) {
-                    addNewItem();
+            // Jika user pilih kode dari datalist
+            $('#items-container').on('change', '.kode', function() {
+                let kode = $(this).val();
+                let row = $(this).closest('tr');
+                let found = sparepartHistory.find(sp => sp.kode === kode);
+                if (found) {
+                    row.find('.jenis').val(found.jenis);
+                    row.find('.nama').val(found.nama);
+                    row.find('.harga').val(found.harga);
+                    row.find('.qty').val(1).trigger('input');
                 }
             });
 
-            // Fungsi untuk menambahkan baris item baru
-            function addNewItem() {
-                const newItem = `
-            <tr class="item-row">
-                <td>
-                    <select class="form-control vehicle-type" name="jenis_kendaraan[]" required>
-                        <option value="">Pilih Jenis</option>
-                        <option value="Motor">Motor</option>
-                        <option value="Mobil">Mobil</option>
-                        <option value="Lainnya">Lainnya</option>
-                    </select>
-                </td>
-                <td>
-                    <select class="form-control vehicle-code select2" name="kode_kendaraan[]" required>
-                        <option value="">Pilih Kode</option>
-                        <option value="KD001">KD001 - Honda Beat</option>
-                        <option value="KD002">KD002 - Toyota Avanza</option>
-                        <!-- Tambahkan opsi lainnya sesuai kebutuhan -->
-                    </select>
-                </td>
-                <td>
-                    <select class="form-control sparepart-code select2" name="kode_sparepart[]" required>
-                        <option value="">Pilih Sparepart</option>
-                        <option value="SP001">SP001 - Oli Mesin</option>
-                        <option value="SP002">SP002 - Ban Dalam</option>
-                        <!-- Tambahkan opsi lainnya sesuai kebutuhan -->
-                    </select>
-                </td>
-                <td>
-                    <input type="number" class="form-control text-center sparepart-qty" name="qty[]" min="1" value="1" required>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">Rp</span>
-                        </div>
-                        <input type="number" class="form-control text-right sparepart-price" name="harga[]" min="0" value="0" required>
-                    </div>
-                </td>
-                <td>
-                    <div class="input-group">
-                        <div class="input-group-prepend">
-                            <span class="input-group-text">Rp</span>
-                        </div>
-                        <input type="text" class="form-control text-right item-total" value="0" readonly>
-                    </div>
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-danger btn-sm remove-item" aria-label="Remove item">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
+            $('#items-container').on('change', '.jenis, .nama', function() {
+                let row = $(this).closest('tr');
+                let jenis = row.find('.jenis').val();
+                let nama = row.find('.nama').val().trim();
 
-                $('#items-container').append(newItem);
+                if (jenis && nama) {
+                    // cek apakah kombinasi jenis + nama sudah ada
+                    let existing = sparepartHistory.find(sp => sp.jenis === jenis && sp.nama === nama);
+                    if (!existing) {
+                        let kodeBaru = generateKode(jenis);
+                        row.find('.kode').val(kodeBaru);
 
-                // Inisialisasi select2 untuk kode kendaraan dan sparepart
-                $('.vehicle-code.select2, .sparepart-code.select2').select2({
-                    placeholder: "Cari...",
-                    allowClear: true
-                });
+                        // tambahkan ke history
+                        sparepartHistory.push({
+                            kode: kodeBaru,
+                            jenis: jenis,
+                            nama: nama,
+                            harga: 0
+                        });
 
-                // Hitung total saat ada perubahan quantity atau harga
-                $('#items-container tr:last-child .sparepart-qty, #items-container tr:last-child .sparepart-price')
-                    .on('input', function() {
-                        calculateItemTotal($(this).closest('tr'));
-                        calculateTotal();
-                    });
+                        populateDatalist(); // update datalist
+                    } else {
+                        row.find('.kode').val(existing.kode);
+                        row.find('.harga').val(existing.harga);
+                    }
+                }
+            });
 
-                // Fokus ke input pertama di baris baru
-                $('#items-container tr:last-child .vehicle-type').focus();
-            }
-
-            // Fungsi untuk menghitung total per item
-            function calculateItemTotal(row) {
-                const qty = parseInt(row.find('.sparepart-qty').val()) || 0;
-                const price = parseInt(row.find('.sparepart-price').val()) || 0;
-                const total = qty * price;
-                row.find('.item-total').val(total.toLocaleString('id-ID'));
-            }
-
-            // Fungsi untuk menghitung total keseluruhan
-            function calculateTotal() {
-                let grandTotal = 0;
-
-                $('.item-row').each(function() {
-                    const qty = parseInt($(this).find('.sparepart-qty').val()) || 0;
-                    const price = parseInt($(this).find('.sparepart-price').val()) || 0;
-                    grandTotal += qty * price;
-
-                    // Update total per item
-                    calculateItemTotal($(this));
-                });
-
-                $('#total_payment').val(grandTotal.toLocaleString('id-ID'));
-            }
-
-            // Panggil calculateTotal saat pertama kali load
-            calculateTotal();
+            $('#items-container').on('click', '.remove-item', function() {
+                $(this).closest('tr').remove();
+                updateTotal();
+            });
 
             $("#formPermintaan").submit(function(event) {
                 event.preventDefault(); // Mencegah reload halaman
