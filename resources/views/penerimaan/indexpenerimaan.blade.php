@@ -1,5 +1,5 @@
 @extends('layout.app')
-@section('title', 'Master Data')
+@section('title', 'Penerimaan')
 
 @section('main')
 

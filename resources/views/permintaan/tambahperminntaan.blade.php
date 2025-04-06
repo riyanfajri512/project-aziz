@@ -1,5 +1,5 @@
 @extends('layout.app')
-@section('title', 'Permintaan')
+@section('title', 'Tambah Pendistribusian')
 
 @section('main')
 
@@ -102,7 +102,7 @@
                                                 <!-- Tambahkan data lain sesuai kebutuhan -->
                                             </select>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
-                                        </div>
+                                        </div> >
 
                                         <div id="pdf-preview-area" class="mt-3 d-none">
                                             <label class="form-label">Preview</label>

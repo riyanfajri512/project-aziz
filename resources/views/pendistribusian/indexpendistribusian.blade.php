@@ -1,5 +1,5 @@
 @extends('layout.app')
-@section('title', 'Master Data')
+@section('title', 'Pendistribusian')
 
 @section('main')
 
@@ -34,6 +34,7 @@
                                         <th>Sparepart Distribusi ID</th>
                                         <th>Jumlah</th>
                                         <th>Plat Nomor</th>
+                                        <th>Tanggal</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
@@ -44,7 +45,8 @@
                                         <td>1001</td>
                                         <td>U001</td>
                                         <td>SPD001</td>
-                                        <td>2</td> <!-- Jumlah yang mengurangi balance -->
+                                        <td>2</td>
+                                        <td>2025-03-26</td>
                                         <td>
                                             <button class="btn btn-primary btn-sm">Edit</button>
                                             <button class="btn btn-danger btn-sm">Delete</button>
@@ -57,6 +59,7 @@
                                         <td>U002</td>
                                         <td>SPD002</td>
                                         <td>3</td>
+                                        <td>2025-03-27</td>
                                         <td>
                                             <button class="btn btn-primary btn-sm">Edit</button>
                                             <button class="btn btn-danger btn-sm">Delete</button>

@@ -1,126 +1,125 @@
 @extends('layout.app')
-@section('title', 'Permintaan')
+@section('title', 'Tambah Pendistribusian')
 
 @section('main')
-
     <div class="content">
         <div class="container">
             <div class="page-title">
-                <h3>Tambah Permintaan</h3>
+                <h3>Tambah Pendistribusian</h3>
             </div>
             <div class="row">
                 <div class="col-md-12 col-lg-12">
                     <div class="card">
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            Form Tambah Permintaan
+                            Form Tambah Pendistribusian
                         </div>
 
                         <div class="card-body">
                             <form id="formPendistribusian">
+                                @csrf
                                 <div class="row">
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Kode Distribusi</label>
-                                            <input type="text" class="form-control" name="Kode Distribusi">
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Penerimaan ID</label>
-                                            <input type="text" class="form-control" name="penerimaan_id">
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Jumlah</label>
-                                            <input type="number" class="form-control" name="lokasi_id">
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
+                                            <label class="form-label">Nomor Perbaikan</label>
+                                            <input type="text" class="form-control" name="no_perbaikan" 
+                                                   placeholder="Contoh: DO01" required>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">User ID</label>
-                                            <input type="text" class="form-control" name="lokasi">
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
+                                            <input type="text" class="form-control" name="user_id" 
+                                                   placeholder="Contoh: 1001" required>
                                         </div>
                                         <div class="mb-3">
+                                            <label class="form-label">Unit ID</label>
+                                            <input type="text" class="form-control" name="unit_id" 
+                                                   placeholder="Contoh: U001" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
                                             <label class="form-label">Sparepart Distribusi ID</label>
-                                            <input type="text" class="form-control" name="kode_pemesanan">
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
+                                            <input type="text" class="form-control" name="sparepart_distribusi_id"
+                                                   placeholder="Contoh: SPD001" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Jumlah</label>
+                                            <input type="number" class="form-control" name="jumlah" 
+                                                   min="1" value="1" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Tanggal</label>
+                                            <input type="date" class="form-control" name="tanggal" required>
                                         </div>
                                     </div>
                                 </div>
 
-                                <div class="d-flex justify-content-end">
+                                <div class="d-flex justify-content-end mt-3">
                                     <button type="submit" class="btn btn-primary">Simpan</button>
                                     <button type="reset" class="btn btn-secondary ms-2">Batal</button>
                                 </div>
                             </form>
                         </div>
-
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
-
-
 @endsection
+
 @section('script')
-    <script>
-        $(document).ready(function () {
-            $("#formPendistribusian").submit(function (event) {
-                event.preventDefault(); // Mencegah reload halaman
-
-                let isValid = true;
-
-                // Loop setiap input dalam form
-                $("#formPendistribusian input, #formPendistribusian textarea, #formPendistribusian select").each(
-                    function () {
-                        if ($(this).val().trim() === "") {
-                            $(this).siblings(".text-danger").removeClass(
-                                "d-none"); // Tampilkan pesan error
-                            isValid = false;
-                        } else {
-                            $(this).siblings(".text-danger").addClass(
-                                "d-none"); // Sembunyikan pesan error jika sudah diisi
-                        }
-                    });
-
-                if (!isValid) {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: "Harap isi semua field yang wajib!",
-                    });
-                    return;
+<script>
+    $(document).ready(function() {
+        // Form submission
+        $("#formPendistribusian").submit(function(e) {
+            e.preventDefault();
+            
+            // Validasi form
+            let isValid = true;
+            $('input[required]').each(function() {
+                if ($(this).val().trim() === '') {
+                    $(this).addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $(this).removeClass('is-invalid');
                 }
+            });
 
-                // Jika valid, tampilkan loading
+            if (!isValid) {
                 Swal.fire({
-                    title: "Mengirim Permintaan...",
-                    html: "Mohon tunggu sebentar.",
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Harap isi semua field yang wajib!'
                 });
+                return;
+            }
 
-                // Simulasi delay request (contoh: request AJAX ke backend)
-                setTimeout(function () {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Permintaan Berhasil Dikirim!",
-                        text: "Data telah berhasil disimpan.",
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-
-                    $("#formPendistribusian")[0].reset(); // Reset form setelah sukses
-                }, 2000);
+            // Kirim data ke server
+            Swal.fire({
+                title: 'Menyimpan Data...',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
             });
 
-            // Ketika user mulai mengetik, hilangkan pesan error
-            $("#formPendistribusian input, #formPendistribusian textarea, #formPendistribusian select").on("input", function () {
-                $(this).siblings(".text-danger").addClass("d-none");
-            });
+            // Simulasi AJAX request
+            setTimeout(() => {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Data pendistribusian berhasil disimpan',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    window.location.href = '/pendistribusian'; // Redirect ke halaman pendistribusian
+                });
+            }, 1500);
         });
-    </script>
+
+        // Reset form validation on input
+        $('input').on('input', function() {
+            $(this).removeClass('is-invalid');
+        });
+    });
+</script>
 @endsection

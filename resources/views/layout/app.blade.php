@@ -46,7 +46,7 @@
                     <a href="{{ route('pendistribusian') }}"><i class="fas fa-truck"></i> Pendistribusian</a>
                 </li>
                 <li>
-                    <a href="#"><i class="fas fa-history"></i> History</a>
+                    <a href="{{ route('history') }}"><i class="fas fa-history"></i> History</a>
                 </li>
 
                 <li>
