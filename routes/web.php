@@ -25,6 +25,7 @@ Route::middleware(['auth'])->group(function () {
     //Permintaan
     Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
     Route::get('/permintaan/tambah', [PermintaanController::class, 'tambah'])->name('permintaan.formtambah');
+    Route::post('/permintaan/simpan', [PermintaanController::class, 'store'])->name('permintaan.simpan');
 
     // Penerimaan
     Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan');

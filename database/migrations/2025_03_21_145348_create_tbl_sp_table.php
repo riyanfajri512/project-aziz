@@ -13,8 +13,10 @@ return new class extends Migration
     {
         Schema::create('tbl_sp', function (Blueprint $table) {
             $table->id();
-            $table->string('no')->unique();
-            $table->string('nama');
+            $table->string('kode')->unique();  // corresponds to "kode" in your array
+            $table->string('jenis');           // corresponds to "jenis"
+            $table->string('nama');            // corresponds to "nama"
+            $table->decimal('harga', 10, 2);   // corresponds to "harga" (using decimal for monetary values)
             $table->timestamps();
         });
     }

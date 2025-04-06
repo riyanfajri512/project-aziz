@@ -102,9 +102,10 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Cabang</label>
-                                            <select name="lokasi_id" id="lokasi" class="form-control" disabled>
+                                            <select name="lokasi_id" id="lokasi" class="form-control" readonly>
                                                 @foreach ($lokasiList as $lokasi)
-                                                    <option value="{{ $lokasi->id }}" {{ $loop->first ? 'selected' : '' }}>
+                                                    <option value="{{ $lokasi->id }}"
+                                                        {{ $loop->first ? 'selected' : '' }}>
                                                         {{ $lokasi->nama }} - {{ $lokasi->unit }}
                                                     </option>
                                                 @endforeach
@@ -126,14 +127,13 @@
 
                                         <div class="mb-3">
                                             <label class="form-label">Suplier</label>
-                                            <select class="form-select" name="suplier_id" required>
+                                            <select class="form-select" name="supplier_id" required>
                                                 <option value="" selected disabled>-- Pilih Suplier --</option>
-                                                suplierList
                                                 @foreach ($suplierList as $supplier)
-                                                <option value="{{ $supplier->id }}">
-                                                    {{ $supplier->nama }}
-                                                </option>
-                                            @endforeach
+                                                    <option value="{{ $supplier->id }}">
+                                                        {{ $supplier->nama }}
+                                                    </option>
+                                                @endforeach
                                             </select>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
@@ -243,7 +243,7 @@
 @section('script')
     <script>
         let sparepartHistory = [{
-                kode: "MOT-001",
+                kode: "Mtr-001",
                 jenis: "Motor",
                 nama: "Kampas Rem",
                 harga: 50000
@@ -271,31 +271,59 @@
         }
 
         function generateKode(jenis) {
-            let prefix = jenis.substring(0, 3).toUpperCase();
+            let prefix = jenis.trim();
 
-            // Hitung jumlah sparepart dengan jenis yang sama
-            let count = sparepartHistory.filter(sp => sp.jenis === jenis).length + 1;
+            // Hitung jumlah data sparepart dari history
+            let countFromHistory = sparepartHistory.filter(sp => sp.jenis === jenis).length;
 
-            return `${prefix}-${count.toString().padStart(3, '0')}`;
+            // Hitung jumlah baris yang sedang aktif di tabel dengan jenis yang sama (yang belum masuk ke history)
+            let countInTable = 0;
+            $('#items-container tr').each(function() {
+                let rowJenis = $(this).find('.jenis').val();
+                let rowKode = $(this).find('.kode').val();
+                if (rowJenis === jenis && rowKode && rowKode.startsWith(prefix + '-')) {
+                    countInTable++;
+                }
+            });
+
+            let totalCount = countFromHistory + countInTable + 1;
+
+            return `${prefix}-${totalCount.toString().padStart(3, '0')}`;
         }
 
         function generateRow() {
             return `
-        <tr>
-            <td><input type="text" class="form-control kode" list="sparepart-list"></td>
-            <td>
-                <select class="form-control jenis">
-                    <option value="">Pilih</option>
-                    <option value="Mobil">Mobil</option>
-                    <option value="Motor">Motor</option>
-                </select>
-            </td>
-            <td><input type="text" class="form-control nama"></td>
-            <td class="text-center"><input type="number" class="form-control qty" min="1" value="1"></td>
-            <td class="text-right"><input type="number" class="form-control harga text-right" value="0"></td>
-            <td class="text-right"><input type="text" class="form-control total text-right" value="0" readonly></td>
-            <td class="text-center"><button type="button" class="btn btn-danger btn-sm remove-item"><i class="fas fa-trash"></i></button></td>
-        </tr>
+       <tr>
+    <td>
+        <input type="text" class="form-control kode" name="kode_sparepart[]" list="sparepart-list">
+    </td>
+    <td>
+        <select class="form-control jenis" name="jenis_kendaraan[]">
+            <option value="">Pilih</option>
+            @foreach ($jenisList as $jenis)
+                <option value="{{ $jenis->singkatan }}">{{ $jenis->nama }}</option>
+            @endforeach
+        </select>
+    </td>
+    <td>
+        <input type="text" class="form-control nama" name="nama_sparepart[]">
+    </td>
+    <td class="text-center">
+        <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
+    </td>
+    <td class="text-right">
+        <input type="number" class="form-control harga text-right" name="harga[]" value="0">
+    </td>
+    <td class="text-right">
+        <input type="text" class="form-control total text-right" name="total_harga[]" value="0" readonly>
+    </td>
+    <td class="text-center">
+        <button type="button" class="btn btn-danger btn-sm remove-item">
+            <i class="fas fa-trash"></i>
+        </button>
+    </td>
+</tr>
+
     `;
         }
 
@@ -386,23 +414,11 @@
                 let row = $(this).closest('tr');
                 let jenis = row.find('.jenis').val();
                 let nama = row.find('.nama').val().trim();
-
                 if (jenis && nama) {
-                    // cek apakah kombinasi jenis + nama sudah ada
                     let existing = sparepartHistory.find(sp => sp.jenis === jenis && sp.nama === nama);
                     if (!existing) {
                         let kodeBaru = generateKode(jenis);
                         row.find('.kode').val(kodeBaru);
-
-                        // tambahkan ke history
-                        sparepartHistory.push({
-                            kode: kodeBaru,
-                            jenis: jenis,
-                            nama: nama,
-                            harga: 0
-                        });
-
-                        populateDatalist(); // update datalist
                     } else {
                         row.find('.kode').val(existing.kode);
                         row.find('.harga').val(existing.harga);
@@ -415,61 +431,69 @@
                 updateTotal();
             });
 
-            $("#formPermintaan").submit(function(event) {
-                event.preventDefault(); // Mencegah reload halaman
+            $('#formPermintaan').on('submit', function(e) {
+        e.preventDefault();
 
-                let isValid = true;
+        // Tampilkan loading spinner
+        Swal.fire({
+            title: 'Menyimpan Data',
+            html: 'Sedang memproses permintaan...',
+            allowOutsideClick: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
 
-                // Loop setiap input dalam form
-                $("#formPermintaan input, #formPermintaan textarea, #formPermintaan select").each(
-                    function() {
-                        if ($(this).val().trim() === "") {
-                            $(this).siblings(".text-danger").removeClass(
-                                "d-none"); // Tampilkan pesan error
-                            isValid = false;
-                        } else {
-                            $(this).siblings(".text-danger").addClass(
-                                "d-none"); // Sembunyikan pesan error jika sudah diisi
-                        }
-                    });
+        // Format data items
+        let items = [];
+        $('#items-container tr').each(function() {
+            items.push({
+                kode_sparepart: $(this).find('[name="kode_sparepart[]"]').val(),
+                jenis_kendaraan: $(this).find('[name="jenis_kendaraan[]"]').val(),
+                nama_sparepart: $(this).find('[name="nama_sparepart[]"]').val(),
+                qty: $(this).find('[name="qty[]"]').val(),
+                harga: $(this).find('[name="harga[]"]').val(),
+                total_harga: $(this).find('[name="total_harga[]"]').val()
+            });
+        });
 
-                if (!isValid) {
-                    Swal.fire({
-                        icon: "error",
-                        title: "Oops...",
-                        text: "Harap isi semua field yang wajib!",
-                    });
-                    return;
-                }
+        // Buat FormData
+        let formData = new FormData(this);
+        formData.append('items', JSON.stringify(items));
 
-                // Jika valid, tampilkan loading
+        // Kirim ke backend
+        $.ajax({
+            url: '/permintaan/simpan',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function(response) {
                 Swal.fire({
-                    title: "Mengirim Permintaan...",
-                    html: "Mohon tunggu sebentar.",
-                    allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
+                    icon: 'success',
+                    title: 'Berhasil!',
+                    text: 'Permintaan berhasil disimpan',
+                    confirmButtonText: 'OK'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                      location.reload();
                     }
                 });
-
-                // Simulasi delay request (contoh: request AJAX ke backend)
-                setTimeout(function() {
-                    Swal.fire({
-                        icon: "success",
-                        title: "Permintaan Berhasil Dikirim!",
-                        text: "Data telah berhasil disimpan.",
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-
-                    $("#formPermintaan")[0].reset(); // Reset form setelah sukses
-                }, 2000);
-            });
-
-            // Ketika user mulai mengetik, hilangkan pesan error
-            $("#formPermintaan input, #formPermintaan textarea, #formPermintaan select").on("input", function() {
-                $(this).siblings(".text-danger").addClass("d-none");
-            });
+            },
+            error: function(xhr) {
+                let errorMessage = xhr.responseJSON?.message || 'Terjadi kesalahan';
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Gagal!',
+                    text: errorMessage,
+                    confirmButtonText: 'Tutup'
+                });
+            }
+        });
+    });
         });
     </script>
 @endsection
