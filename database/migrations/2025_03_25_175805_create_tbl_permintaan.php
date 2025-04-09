@@ -12,20 +12,30 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('tbl_permintaan', function (Blueprint $table) {
-            $table->id(); // Primary Key (Auto Increment)
-            $table->string('unit'); // Unit (Pembuat)
-            $table->string('cabang'); // Cabang
-            $table->string('lokasi'); // Lokasi
-            $table->string('kode_pemesanan')->unique(); // Kode Pemesanan (Unik)
-            $table->string('lokasi_id'); // Lokasi ID
-            $table->date('tanggal_dibuat'); // Tanggal Dibuat
-            $table->text('deskripsi')->nullable(); // Deskripsi/Catatan
-            $table->string('file')->nullable(); // File (Path File)
-            $table->string('sp_id'); // Sp ID
-            $table->enum('status', ['Pending', 'Approved', 'Rejected'])->default('Pending'); // Status
-            $table->string('suplier_id'); // Suplier ID
-            $table->string('sparepart_id'); // Sparepart ID
-            $table->timestamps(); // created_at & updated_at
+            $table->id();
+            $table->string('kode_pemesanan')->unique();
+            $table->string('unit_pembuat');
+            $table->foreignId('lokasi_id')->constrained('tbl_lokasi')->onDelete('cascade');
+            $table->string('file_path')->nullable();
+            $table->date('tanggal_dibuat');
+            $table->foreignId('supplier_id')->constrained('tbl_supplier')->onDelete('cascade');
+            $table->text('deskripsi')->nullable();
+            $table->decimal('total_payment', 15, places: 2)->default(0);
+            $table->string('status')->default('pending'); // pending, approved, rejected
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->timestamps();
+        });
+
+        Schema::create('tbl_permintaan_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('permintaan_id')->constrained('tbl_permintaan')->onDelete('cascade');
+            $table->string('kode_sparepart');
+            $table->string('jenis_kendaraan');
+            $table->string('nama_sparepart');
+            $table->integer('qty');
+            $table->decimal('harga', 15, 2);
+            $table->decimal('total_harga', 15, 2);
+            $table->timestamps();
         });
     }
 
@@ -34,6 +44,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('tbl_permintaan_items');
         Schema::dropIfExists('tbl_permintaan');
     }
 };
