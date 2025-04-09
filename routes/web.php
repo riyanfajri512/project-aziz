@@ -26,6 +26,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/permintaan', [PermintaanController::class, 'index'])->name('permintaan.index');
     Route::get('/permintaan/tambah', [PermintaanController::class, 'tambah'])->name('permintaan.formtambah');
     Route::post('/permintaan/simpan', [PermintaanController::class, 'store'])->name('permintaan.simpan');
+    Route::get('/permintaan/list', [PermintaanController::class, 'getListPermintaan'])->name('permintaan.list');
+    Route::get('/permintaan/{id}', [PermintaanController::class, 'show'])->name('permintaan.show');
+    Route::get('/permintaan/{id}/edit', [PermintaanController::class, 'edit'])->name('permintaan.edit');
+    Route::post('/permintaan/{id}/approve', [PermintaanController::class, 'approve'])->name('permintaan.approve');
+    Route::get('/permintaan/{id}/export', [PermintaanController::class, 'exportPdf'])->name('permintaan.export');
+    Route::delete('/permintaan/{id}', [PermintaanController::class, 'destroy'])->name('permintaan.destroy');
 
     // Penerimaan
     Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan');
