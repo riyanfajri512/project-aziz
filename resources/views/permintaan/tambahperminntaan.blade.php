@@ -86,12 +86,11 @@
                         <div class="card-body">
                             <form id="formPermintaan">
                                 <div class="row">
-
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">No Permintaan</label>
                                             <input type="text" class="form-control" name="kode_pemesanan"
-                                                value=" 0001/voum-1" readonly>
+                                                value="{{ $kodePemesanan }}" readonly>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
                                         <div class="mb-3">
@@ -242,19 +241,19 @@
 @endsection
 @section('script')
     <script>
-        let sparepartHistory = [{
-                kode: "Mtr-001",
-                jenis: "Motor",
-                nama: "Kampas Rem",
-                harga: 50000
-            },
-            {
-                kode: "MOB-001",
-                jenis: "Mobil",
-                nama: "Filter Oli",
-                harga: 75000
-            }
-        ];
+        // let sparepartHistory = [{
+        //         kode: "Mtr-001",
+        //         jenis: "Motor",
+        //         nama: "Kampas Rem",
+        //         harga: 50000
+        //     },
+        //     {
+        //         kode: "MOB-001",
+        //         jenis: "Mobil",
+        //         nama: "Filter Oli",
+        //         harga: 75000
+        //     }
+        // ];
 
         function updateTotal() {
             let total = 0;
@@ -432,68 +431,68 @@
             });
 
             $('#formPermintaan').on('submit', function(e) {
-        e.preventDefault();
+                e.preventDefault();
 
-        // Tampilkan loading spinner
-        Swal.fire({
-            title: 'Menyimpan Data',
-            html: 'Sedang memproses permintaan...',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            }
-        });
-
-        // Format data items
-        let items = [];
-        $('#items-container tr').each(function() {
-            items.push({
-                kode_sparepart: $(this).find('[name="kode_sparepart[]"]').val(),
-                jenis_kendaraan: $(this).find('[name="jenis_kendaraan[]"]').val(),
-                nama_sparepart: $(this).find('[name="nama_sparepart[]"]').val(),
-                qty: $(this).find('[name="qty[]"]').val(),
-                harga: $(this).find('[name="harga[]"]').val(),
-                total_harga: $(this).find('[name="total_harga[]"]').val()
-            });
-        });
-
-        // Buat FormData
-        let formData = new FormData(this);
-        formData.append('items', JSON.stringify(items));
-
-        // Kirim ke backend
-        $.ajax({
-            url: '/permintaan/simpan',
-            type: 'POST',
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {
-                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-            },
-            success: function(response) {
+                // Tampilkan loading spinner
                 Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Permintaan berhasil disimpan',
-                    confirmButtonText: 'OK'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                      location.reload();
+                    title: 'Menyimpan Data',
+                    html: 'Sedang memproses permintaan...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
                     }
                 });
-            },
-            error: function(xhr) {
-                let errorMessage = xhr.responseJSON?.message || 'Terjadi kesalahan';
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Gagal!',
-                    text: errorMessage,
-                    confirmButtonText: 'Tutup'
+
+                // Format data items
+                let items = [];
+                $('#items-container tr').each(function() {
+                    items.push({
+                        kode_sparepart: $(this).find('[name="kode_sparepart[]"]').val(),
+                        jenis_kendaraan: $(this).find('[name="jenis_kendaraan[]"]').val(),
+                        nama_sparepart: $(this).find('[name="nama_sparepart[]"]').val(),
+                        qty: $(this).find('[name="qty[]"]').val(),
+                        harga: $(this).find('[name="harga[]"]').val(),
+                        total_harga: $(this).find('[name="total_harga[]"]').val()
+                    });
                 });
-            }
-        });
-    });
+
+                // Buat FormData
+                let formData = new FormData(this);
+                formData.append('items', JSON.stringify(items));
+
+                // Kirim ke backend
+                $.ajax({
+                    url: '/permintaan/simpan',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    headers: {
+                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil!',
+                            text: 'Permintaan berhasil disimpan',
+                            confirmButtonText: 'OK'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                location.reload();
+                            }
+                        });
+                    },
+                    error: function(xhr) {
+                        let errorMessage = xhr.responseJSON?.message || 'Terjadi kesalahan';
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal!',
+                            text: errorMessage,
+                            confirmButtonText: 'Tutup'
+                        });
+                    }
+                });
+            });
         });
     </script>
 @endsection

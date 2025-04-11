@@ -119,95 +119,141 @@
                 }
             });
 
-            // Handle Delete Button
-            $(document).on('click', '.view-btn', function() {
-                var id = $(this).data('id');
-                var modal = $('#detailModal');
 
-                // Tampilkan loading spinner
-                modal.find('#modalBodyContent').html(`
-        <div class="text-center py-4">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+            $(document).ready(function() {
+                const STATUS = {
+                    PENDING: 1,
+                    APPROVED: 2,
+                    REJECTED: 3,
+                    BTB: 4,
+                    SP_FINAL: 5
+                };
+
+                // View Button Click Handler
+                $(document).on('click', '.view-btn', function() {
+                    var id = $(this).data('id');
+                    var modal = $('#detailModal');
+
+                    // Show loading spinner
+                    modal.find('#modalBodyContent').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2">Memuat data...</p>
             </div>
-            <p class="mt-2">Memuat data...</p>
-        </div>
-    `);
+        `);
 
-                // Kosongkan footer actions sementara
-                modal.find('#modalFooterActions').empty();
+                    // Clear footer actions temporarily
+                    modal.find('#modalFooterActions').empty();
 
-                // Load konten via AJAX
-                $.get('/permintaan/' + id, function(data) {
-                    modal.find('#modalBodyContent').html(data);
+                    // Load content via AJAX
+                    $.get('/permintaan/' + id, function(data) {
+                        modal.find('#modalBodyContent').html(data);
 
-                    // Jika status pending, tambahkan tombol aksi
-                    if (modal.find('[data-status]').data('status') === 'pending') {
-                        modal.find('#modalFooterActions').html(`
-                <button onclick="window.location.href='/permintaan/${id}/edit'" class="btn btn-sm btn-primary me-2">
-                    <i class="fas fa-edit me-1"></i> Edit
-                </button>
-                <button class="btn btn-sm btn-danger delete-btn" data-id="${id}">
-                    <i class="fas fa-trash me-1"></i> Hapus
-                </button>
-            `);
-                    }
-                }).fail(function() {
+                        // Find status element and get status ID
+                        var statusElement = modal.find('[data-status-id]');
+                        var statusId = statusElement.data('status-id');
+
+                        // If status is pending, show action buttons
+                        if (statusId == STATUS.PENDING) {
+                            modal.find('#modalFooterActions').html(`
+                    <button onclick="window.location.href='/permintaan/${id}/edit'" class="btn btn-sm btn-primary me-2">
+                        <i class="fas fa-edit me-1"></i> Edit
+                    </button>
+                    <button class="btn btn-sm btn-danger delete-btn" data-id="${id}">
+                        <i class="fas fa-trash me-1"></i> Hapus
+                    </button>
+                `);
+                        }
+                    }).fail(function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Gagal memuat data',
+                            text: 'Terjadi kesalahan saat memuat detail permintaan',
+                            confirmButtonColor: '#3085d6',
+                        });
+                    });
+                });
+
+                // Delete Button Click Handler
+                $(document).on('click', '#modalFooterActions .delete-btn', function() {
+                    var id = $(this).data('id');
+
                     Swal.fire({
-                        icon: 'error',
-                        title: 'Gagal memuat data',
-                        text: 'Terjadi kesalahan saat memuat detail permintaan',
-                        confirmButtonColor: '#3085d6',
+                        title: 'Apakah Anda yakin?',
+                        text: "Anda tidak akan dapat mengembalikan data ini!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, hapus!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.ajax({
+                                url: '/permintaan/' + id,
+                                type: 'DELETE',
+                                data: {
+                                    _token: $('meta[name="csrf-token"]').attr(
+                                        'content')
+                                },
+                                success: function() {
+                                    $('#detailModal').modal('hide');
+                                    $('.dataTable').DataTable().ajax.reload();
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Terhapus!',
+                                        text: 'Data permintaan telah dihapus.',
+                                        confirmButtonColor: '#3085d6',
+                                        timer: 2000,
+                                        timerProgressBar: true
+                                    });
+                                },
+                                error: function() {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Gagal',
+                                        text: 'Terjadi kesalahan saat menghapus data',
+                                        confirmButtonColor: '#3085d6',
+                                    });
+                                }
+                            });
+                        }
+                    });
+                });
+
+                // Approve Button Click Handler (if you have approve button in your datatable)
+                $(document).on('click', '.approve-btn', function() {
+                    var id = $(this).data('id');
+
+                    Swal.fire({
+                        title: 'Setujui Permintaan?',
+                        text: "Anda akan menyetujui permintaan ini",
+                        icon: 'question',
+                        showCancelButton: true,
+                        confirmButtonColor: '#198754',
+                        cancelButtonColor: '#6c757d',
+                        confirmButtonText: 'Ya, Setujui!',
+                        cancelButtonText: 'Batal'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            $.post('/permintaan/' + id + '/approve', {
+                                _token: $('meta[name="csrf-token"]').attr('content')
+                            }).done(() => {
+                                Swal.fire('Disetujui!',
+                                    'Permintaan telah disetujui', 'success');
+                                $('.dataTable').DataTable().ajax.reload();
+                            }).fail(() => {
+                                Swal.fire('Error!', 'Gagal menyetujui permintaan',
+                                    'error');
+                            });
+                        }
                     });
                 });
             });
 
-            // Handle delete button dengan SweetAlert
-            $(document).on('click', '#modalFooterActions .delete-btn', function() {
-                var id = $(this).data('id');
-
-                Swal.fire({
-                    title: 'Apakah Anda yakin?',
-                    text: "Anda tidak akan dapat mengembalikan data ini!",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, hapus!',
-                    cancelButtonText: 'Batal'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: '/permintaan/' + id,
-                            type: 'DELETE',
-                            data: {
-                                _token: $('meta[name="csrf-token"]').attr('content')
-                            },
-                            success: function() {
-                                $('#detailModal').modal('hide');
-                                $('.dataTable').DataTable().ajax.reload();
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Terhapus!',
-                                    text: 'Data permintaan telah dihapus.',
-                                    confirmButtonColor: '#3085d6',
-                                    timer: 2000,
-                                    timerProgressBar: true
-                                });
-                            },
-                            error: function() {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Gagal',
-                                    text: 'Terjadi kesalahan saat menghapus data',
-                                    confirmButtonColor: '#3085d6',
-                                });
-                            }
-                        });
-                    }
-                });
-            });
 
             // function showAlert(type, title, message) {
             //     const Toast = Swal.mixin({

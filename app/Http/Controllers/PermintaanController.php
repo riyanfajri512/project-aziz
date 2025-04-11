@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JenisKendaraan;
 use App\Models\Lokasi;
 use App\Models\Permintaan;
+use App\Models\Status;
 use App\Models\Supplier;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
@@ -23,7 +24,7 @@ class PermintaanController extends Controller
 
     public function getListPermintaan()
     {
-        $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi'])
+        $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi', 'status'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -33,7 +34,10 @@ class PermintaanController extends Controller
                 return $data->tanggal_dibuat->format('d/m/Y');
             })
             ->addColumn('suplier', function($data) {
-                return $data->supplier->nama ?? '-';
+                return $data->suplier->nama ?? '-';
+            })
+            ->addColumn('total_payment', function($data) {
+                return 'Rp ' . number_format($data->total_payment, 0, ',', '.');
             })
             ->addColumn('total', function($data) {
                 return 'Rp ' . number_format($data->total_payment, 0, ',', '.');
@@ -44,16 +48,19 @@ class PermintaanController extends Controller
             ->addColumn('lokasi_unit', function($data) {
                 return $data->lokasi->unit ?? '-';
             })
-            ->addColumn('suplier', function($data) {
-                return $data->suplier->nama ?? '-';
-            })
             ->addColumn('status', function($data) {
                 $badge = [
-                    'pending' => 'warning',
-                    'approved' => 'success',
-                    'rejected' => 'danger'
+                    'Pending' => 'warning',
+                    'Approved' => 'success',
+                    'Rejected' => 'danger',
+                    'BTB' => 'primary',
+                    'SP Final' => 'info'
                 ];
-                return '<span class="badge bg-'.$badge[$data->status].'">'.strtoupper($data->status).'</span>';
+
+                $statusName = $data->status->nama ?? 'Pending';
+                return '<span class="badge bg-'.($badge[$statusName] ?? 'secondary').'">'
+                    .strtoupper($statusName).
+                '</span>';
             })
             ->addColumn('action', function($data) {
                 $btn = '<div class="btn-group">';
@@ -64,7 +71,7 @@ class PermintaanController extends Controller
                          </button>';
 
                 // Approve Button (only for pending status)
-                if($data->status == 'pending') {
+                if(($data->status->nama ?? 'Pending') == 'Pending') {
                     $btn .= '<button class="btn btn-sm btn-success approve-btn" data-id="'.$data->id.'" title="Approve">
                                 <i class="fas fa-check"></i>
                              </button>';
@@ -82,31 +89,132 @@ class PermintaanController extends Controller
             ->make(true);
     }
 
-
     public function show($id)
     {
-        $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi'])->findOrFail($id);
+        $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi', 'status'])
+                      ->findOrFail($id);
+
+        if (!$permintaan->status) {
+            $permintaan->setRelation('status', Status::find(1));
+        }
+
         return view('permintaan._show', compact('permintaan'));
     }
 
-
     public function tambah()
-    {
+{
+    $lokasiList = Lokasi::all();
+    $jenisList = JenisKendaraan::all();
+    $suplierList = Supplier::all();
 
-        $lokasiList = Lokasi::all();
-        $jenisList = JenisKendaraan::all();
-        $suplierList = Supplier::all();
+    // Generate kode pemesanan
+    $lastPermintaan = Permintaan::orderBy('id', 'desc')->first();
+    $nextNumber = $lastPermintaan ? (int)explode('/', $lastPermintaan->kode_pemesanan)[0] + 1 : 1;
+    $kodePemesanan = sprintf('%04d', $nextNumber) . '/voum-1';
 
-        return view('permintaan.tambahperminntaan', [
-            'lokasiList' => $lokasiList,
-            'jenisList' => $jenisList,
-            'suplierList' => $suplierList
-        ]);
-    }
+    return view('permintaan.tambahperminntaan', [
+        'lokasiList' => $lokasiList,
+        'jenisList' => $jenisList,
+        'suplierList' => $suplierList,
+        'kodePemesanan' => $kodePemesanan
+    ]);
+}
+
+    // public function store(Request $request)
+    // {
+
+
+    //     // Validasi input dasar
+    //     $validated = $request->validate([
+    //         'kode_pemesanan' => 'required',
+    //         'unit' => 'required',
+    //         'lokasi_id' => 'required',
+    //         'tanggal_dibuat' => 'required|date',
+    //         'supplier_id' => 'required',
+    //         'deskripsi' => 'nullable',
+    //         'file' => 'nullable|file|mimes:pdf,jpg,png|max:2048',
+    //     ]);
+
+    //     try {
+    //         DB::beginTransaction();
+
+    //         // Handle file upload
+    //         if ($request->hasFile('file')) {
+    //             $filePath = $request->file('file')->store('permintaan_files');
+    //             $validated['file_path'] = $filePath;
+    //         }
+
+    //         // Proses items - gunakan format array jika ada, jika tidak gunakan JSON
+    //         $items = $request->has('kode_sparepart')
+    //             ? $this->formatItemsFromArrays($request)
+    //             : json_decode($request->items, true);
+
+    //         // Validasi items
+    //         if (empty($items)) {
+    //             throw new \Exception('Minimal 1 item sparepart harus dimasukkan');
+    //         }
+
+    //         // Hitung total payment
+    //         $totalPayment = array_reduce($items, function($carry, $item) {
+    //             return $carry + (float) str_replace('.', '', $item['total_harga']);
+    //         }, 0);
+
+    //         // Simpan data permintaan
+    //         $permintaan = Permintaan::create(array_merge($validated, [
+    //             'user_id' => auth()->id(),
+    //             'unit_pembuat' => auth()->user()->name,
+    //             'total_payment' => $totalPayment
+    //         ]));
+
+    //         // Simpan items dan update sparepart
+    //         foreach ($items as $item) {
+    //             // Bersihkan format angka
+    //             $harga = (float) str_replace('.', '', $item['harga']);
+    //             $qty = (int) $item['qty'];
+    //             $totalHarga = (float) str_replace('.', '', $item['total_harga']);
+
+    //             // Simpan item permintaan
+    //             $permintaan->items()->create([
+    //                 'kode_sparepart' => $item['kode_sparepart'],
+    //                 'jenis_kendaraan' => $item['jenis_kendaraan'],
+    //                 'nama_sparepart' => $item['nama_sparepart'],
+    //                 'qty' => $qty,
+    //                 'harga' => $harga,
+    //                 'total_harga' => $totalHarga
+    //             ]);
+
+    //             // Update atau create sparepart
+    //             DB::table('tbl_sp')->updateOrInsert(
+    //                 ['kode' => $item['kode_sparepart']],
+    //                 [
+    //                     'jenis' => $item['jenis_kendaraan'],
+    //                     'nama' => $item['nama_sparepart'],
+    //                     'harga' => $harga,
+    //                     'created_at' => now(),
+    //                     'updated_at' => now()
+    //                 ]
+    //             );
+    //         }
+
+    //         DB::commit();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Permintaan berhasil disimpan',
+    //             'data' => $permintaan
+    //         ]);
+
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function store(Request $request)
     {
-
         // dd($request->all());
         // Validasi input dasar
         $validated = $request->validate([
@@ -143,11 +251,15 @@ class PermintaanController extends Controller
                 return $carry + (float) str_replace('.', '', $item['total_harga']);
             }, 0);
 
+            // Dapatkan ID status Pending (asumsi ID 1 adalah status Pending)
+            $pendingStatusId = Status::where('nama', 'Pending')->first()->id;
+
             // Simpan data permintaan
             $permintaan = Permintaan::create(array_merge($validated, [
                 'user_id' => auth()->id(),
                 'unit_pembuat' => auth()->user()->name,
-                'total_payment' => $totalPayment
+                'total_payment' => $totalPayment,
+                'status_id' => $pendingStatusId // Gunakan ID status
             ]));
 
             // Simpan items dan update sparepart

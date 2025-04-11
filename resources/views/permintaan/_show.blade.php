@@ -1,4 +1,4 @@
-<div data-status="{{ $permintaan->status }}">
+<div data-status-id="{{ $permintaan->status_id }}">
     <div class="row mb-4">
         <div class="col-md-6">
             <div class="card">
@@ -14,14 +14,18 @@
                         <div class="col-6">
                             <p><strong>Status:</strong><br>
                                 @php
-                                    $badge = [
-                                        'pending' => 'warning',
-                                        'approved' => 'success',
-                                        'rejected' => 'danger'
+                                    $badgeClasses = [
+                                        1 => 'bg-warning', // Pending
+                                        2 => 'bg-success', // Approved
+                                        3 => 'bg-danger',  // Rejected
+                                        4 => 'bg-primary', // BTB
+                                        5 => 'bg-info'     // SP Final
                                     ];
+                                    $statusId = $permintaan->status_id;
+                                    $badgeClass = $badgeClasses[$statusId] ?? 'bg-secondary';
                                 @endphp
-                                <span class="badge bg-{{ $badge[$permintaan->status] }}">
-                                    {{ strtoupper($permintaan->status) }}
+                                <span class="badge {{ $badgeClass }}">
+                                    {{ $permintaan->status->nama ?? 'Unknown' }}
                                 </span>
                             </p>
                             <p><strong>Lokasi:</strong><br> {{ $permintaan->lokasi->nama ?? '-' }} ({{ $permintaan->lokasi->unit ?? '-' }})</p>
@@ -38,7 +42,6 @@
                 </div>
                 <div class="card-body">
                     <p><strong>Nama Supplier:</strong><br> {{ $permintaan->suplier->nama ?? '-' }}</p>
-                    <p><strong>Kontak:</strong><br> {{ $permintaan->suplier->telepon ?? '-' }}</p>
                     <p><strong>Alamat:</strong><br> {{ $permintaan->suplier->alamat ?? '-' }}</p>
                 </div>
             </div>
