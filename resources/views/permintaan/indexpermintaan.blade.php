@@ -3,6 +3,34 @@
 
 @section('main')
 
+    <!-- Modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl"> <!-- menggunakan modal-xl untuk lebar extra large -->
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="detailModalLabel">Detail Permintaan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modalBodyContent">
+                    <!-- Konten akan diisi via AJAX -->
+                    {{-- <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Memuat data...</p>
+                    </div> --}}
+                </div>
+                <div class="modal-footer">
+                    <div id="modalFooterActions" class="me-auto">
+                        <!-- Tombol aksi akan muncul di sini -->
+                    </div>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="content">
         <div class="container">
             <div class="page-title">
@@ -16,18 +44,17 @@
                                 <label for="filterTanggal">Tanggal: </label>
                                 <input type="date" id="filterTanggal" class="form-control d-inline-block"
                                     style="width: auto;">
-
                             </div>
                             <a href="{{ route('permintaan.formtambah') }}" class="btn btn-primary">Tambah Permintaan</a>
                         </div>
 
                         <div class="card-body">
                             <div class="table-responsive" style="overflow-x: auto;">
-                                <table class="table table-striped table-hover" id="tabelPermintaan"
-                                    style="width: max-content; min-width: 100%;">
+                                <table class="table table-striped table-hover" id="tabelPermintaan" style="width: 100%;">
                                     <thead class="table-dark">
                                         <tr>
                                             <th>No</th>
+                                            <th>Status</th>
                                             <th>Kode Pemesanan</th>
                                             <th>Unit Pembuat</th>
                                             <th>Cabang</th>
@@ -35,22 +62,17 @@
                                             <th>Tanggal</th>
                                             <th>Supplier</th>
                                             <th>Total</th>
-                                            <th>Status</th>
                                             <th>Aksi</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                         </div>
-
                     </div>
-
                 </div>
             </div>
         </div>
-    </div>
     </div>
 @endsection
 @section('script')
@@ -65,28 +87,28 @@
                         data: 'DT_RowIndex'
                     },
                     {
+                        data: 'status'
+                    },
+                    {
                         data: 'kode_pemesanan'
                     },
                     {
                         data: 'unit_pembuat'
                     },
                     {
-                        data: 'lokasi.nama'
+                        data: 'lokasi_nama'
                     },
                     {
-                        data: 'lokasi.unit'
+                        data: 'lokasi_unit'
                     },
                     {
                         data: 'tanggal'
                     },
                     {
-                        data: 'supplier.nama'
+                        data: 'suplier'
                     },
                     {
                         data: 'total_payment'
-                    },
-                    {
-                        data: 'status'
                     },
                     {
                         data: 'action'
@@ -98,32 +120,114 @@
             });
 
             // Handle Delete Button
-            $(document).on('click', '.delete-btn', function() {
+            $(document).on('click', '.view-btn', function() {
                 var id = $(this).data('id');
+                var modal = $('#detailModal');
+
+                // Tampilkan loading spinner
+                modal.find('#modalBodyContent').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Memuat data...</p>
+        </div>
+    `);
+
+                // Kosongkan footer actions sementara
+                modal.find('#modalFooterActions').empty();
+
+                // Load konten via AJAX
+                $.get('/permintaan/' + id, function(data) {
+                    modal.find('#modalBodyContent').html(data);
+
+                    // Jika status pending, tambahkan tombol aksi
+                    if (modal.find('[data-status]').data('status') === 'pending') {
+                        modal.find('#modalFooterActions').html(`
+                <button onclick="window.location.href='/permintaan/${id}/edit'" class="btn btn-sm btn-primary me-2">
+                    <i class="fas fa-edit me-1"></i> Edit
+                </button>
+                <button class="btn btn-sm btn-danger delete-btn" data-id="${id}">
+                    <i class="fas fa-trash me-1"></i> Hapus
+                </button>
+            `);
+                    }
+                }).fail(function() {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal memuat data',
+                        text: 'Terjadi kesalahan saat memuat detail permintaan',
+                        confirmButtonColor: '#3085d6',
+                    });
+                });
+            });
+
+            // Handle delete button dengan SweetAlert
+            $(document).on('click', '#modalFooterActions .delete-btn', function() {
+                var id = $(this).data('id');
+
                 Swal.fire({
-                    title: 'Hapus Permintaan?',
-                    text: "Data tidak bisa dikembalikan!",
+                    title: 'Apakah Anda yakin?',
+                    text: "Anda tidak akan dapat mengembalikan data ini!",
                     icon: 'warning',
                     showCancelButton: true,
                     confirmButtonColor: '#d33',
                     cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, Hapus!'
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal'
                 }).then((result) => {
                     if (result.isConfirmed) {
                         $.ajax({
                             url: '/permintaan/' + id,
                             type: 'DELETE',
                             data: {
-                                _token: "{{ csrf_token() }}"
+                                _token: $('meta[name="csrf-token"]').attr('content')
                             },
-                            success: function(response) {
-                                $('#permintaan-table').DataTable().ajax.reload();
-                                Swal.fire('Terhapus!', response.message, 'success');
+                            success: function() {
+                                $('#detailModal').modal('hide');
+                                $('.dataTable').DataTable().ajax.reload();
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Terhapus!',
+                                    text: 'Data permintaan telah dihapus.',
+                                    confirmButtonColor: '#3085d6',
+                                    timer: 2000,
+                                    timerProgressBar: true
+                                });
+                            },
+                            error: function() {
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Gagal',
+                                    text: 'Terjadi kesalahan saat menghapus data',
+                                    confirmButtonColor: '#3085d6',
+                                });
                             }
                         });
                     }
                 });
             });
+
+            // function showAlert(type, title, message) {
+            //     const Toast = Swal.mixin({
+            //         toast: true,
+            //         position: 'top-end',
+            //         showConfirmButton: false,
+            //         timer: 3000,
+            //         timerProgressBar: true,
+            //         didOpen: (toast) => {
+            //             toast.addEventListener('mouseenter', Swal.stopTimer)
+            //             toast.addEventListener('mouseleave', Swal.resumeTimer)
+            //         }
+            //     });
+
+            //     Toast.fire({
+            //         icon: type,
+            //         title: title,
+            //         text: message
+            //     });
+            // }
 
             // Handle Approve Button
             $(document).on('click', '.approve-btn', function() {

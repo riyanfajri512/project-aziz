@@ -23,7 +23,7 @@ class PermintaanController extends Controller
 
     public function getListPermintaan()
     {
-        $permintaan = Permintaan::with(['user', 'suplier', 'items'])
+        $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi'])
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -38,6 +38,15 @@ class PermintaanController extends Controller
             ->addColumn('total', function($data) {
                 return 'Rp ' . number_format($data->total_payment, 0, ',', '.');
             })
+            ->addColumn('lokasi_nama', function($data) {
+                return $data->lokasi->nama ?? '-';
+            })
+            ->addColumn('lokasi_unit', function($data) {
+                return $data->lokasi->unit ?? '-';
+            })
+            ->addColumn('suplier', function($data) {
+                return $data->suplier->nama ?? '-';
+            })
             ->addColumn('status', function($data) {
                 $badge = [
                     'pending' => 'warning',
@@ -49,17 +58,10 @@ class PermintaanController extends Controller
             ->addColumn('action', function($data) {
                 $btn = '<div class="btn-group">';
 
-                // View Button
-                $btn .= '<a href="'.route('permintaan.show', $data->id).'" class="btn btn-sm btn-info" title="View">
+                // View Button with modal trigger
+                $btn .= '<button class="btn btn-sm btn-info view-btn" data-id="'.$data->id.'" data-bs-toggle="modal" data-bs-target="#detailModal" title="View">
                             <i class="fas fa-eye"></i>
-                         </a>';
-
-                // Edit Button (only for pending status)
-                if($data->status == 'pending') {
-                    $btn .= '<a href="'.route('permintaan.edit', $data->id).'" class="btn btn-sm btn-primary" title="Edit">
-                                <i class="fas fa-edit"></i>
-                             </a>';
-                }
+                         </button>';
 
                 // Approve Button (only for pending status)
                 if($data->status == 'pending') {
@@ -73,18 +75,18 @@ class PermintaanController extends Controller
                             <i class="fas fa-file-pdf"></i>
                          </a>';
 
-                // Delete Button (only for pending status)
-                if($data->status == 'pending') {
-                    $btn .= '<button class="btn btn-sm btn-danger delete-btn" data-id="'.$data->id.'" title="Delete">
-                                <i class="fas fa-trash"></i>
-                             </button>';
-                }
-
                 $btn .= '</div>';
                 return $btn;
             })
             ->rawColumns(['status', 'action'])
             ->make(true);
+    }
+
+
+    public function show($id)
+    {
+        $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi'])->findOrFail($id);
+        return view('permintaan._show', compact('permintaan'));
     }
 
 

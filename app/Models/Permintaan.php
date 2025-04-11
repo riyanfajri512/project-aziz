@@ -38,7 +38,7 @@ class Permintaan extends Model
     // Relasi ke supplier
     public function suplier()
     {
-        return $this->belongsTo(Supplier::class, 'suplier_id');
+        return $this->belongsTo(Supplier::class, 'supplier_id');
     }
 
     // Relasi ke user
