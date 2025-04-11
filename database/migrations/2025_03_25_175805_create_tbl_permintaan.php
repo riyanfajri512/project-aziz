@@ -20,8 +20,9 @@ return new class extends Migration
             $table->date('tanggal_dibuat');
             $table->foreignId('supplier_id')->constrained('tbl_supplier')->onDelete('cascade');
             $table->text('deskripsi')->nullable();
-            $table->decimal('total_payment', 15, places: 2)->default(0);
-            $table->string('status')->default('pending'); // pending, approved, rejected
+            $table->decimal('total_payment', 15, 2)->default(0);
+            $table->foreignId('status_id')->constrained('tbl_status')->default(1);
+            $table->text('alasan_reject')->nullable();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->timestamps();
         });
@@ -39,9 +40,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('tbl_permintaan_items');

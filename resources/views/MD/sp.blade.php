@@ -57,7 +57,7 @@
                                         @foreach($sp as $jenis)
                                             <tr>
                                                 <td>{{ $loop->iteration }}</td>
-                                                <td>{{ $jenis->no }}</td>
+                                                <td>{{ $jenis->kode }}</td>
                                                 <td>{{ $jenis->nama }}</td>
                                                 <td>
                                                     <button class="btn btn-primary btnEdit" data-id="{{ $jenis->id }}"

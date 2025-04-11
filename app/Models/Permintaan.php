@@ -21,7 +21,8 @@ class Permintaan extends Model
         'supplier_id',
         'deskripsi',
         'total_payment',
-        'status',
+        'status_id',
+        'alasan_reject',
         'user_id'
     ];
 
@@ -51,5 +52,10 @@ class Permintaan extends Model
     public function items()
     {
         return $this->hasMany(PermintaanItem::class, 'permintaan_id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(\App\Models\Status::class, 'status_id');
     }
 }
