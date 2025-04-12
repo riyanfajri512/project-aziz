@@ -276,32 +276,32 @@
             // }
 
             // Handle Approve Button
-            $(document).on('click', '.approve-btn', function() {
-                var id = $(this).data('id');
-                Swal.fire({
-                    title: 'Setujui Permintaan?',
-                    text: "Pastikan semua data sudah benar!",
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#28a745',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Ya, Setujui!'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: '/permintaan/' + id + '/approve',
-                            type: 'POST',
-                            data: {
-                                _token: "{{ csrf_token() }}"
-                            },
-                            success: function(response) {
-                                $('#permintaan-table').DataTable().ajax.reload();
-                                Swal.fire('Disetujui!', response.message, 'success');
-                            }
-                        });
-                    }
-                });
-            });
+            // $(document).on('click', '.approve-btn', function() {
+            //     var id = $(this).data('id');
+            //     Swal.fire({
+            //         title: 'Setujui Permintaan?',
+            //         text: "Pastikan semua data sudah benar!",
+            //         icon: 'question',
+            //         showCancelButton: true,
+            //         confirmButtonColor: '#28a745',
+            //         cancelButtonColor: '#3085d6',
+            //         confirmButtonText: 'Ya, Setujui!'
+            //     }).then((result) => {
+            //         if (result.isConfirmed) {
+            //             $.ajax({
+            //                 url: '/permintaan/' + id + '/approve',
+            //                 type: 'POST',
+            //                 data: {
+            //                     _token: "{{ csrf_token() }}"
+            //                 },
+            //                 success: function(response) {
+            //                     $('#permintaan-table').DataTable().ajax.reload();
+            //                     Swal.fire('Disetujui!', response.message, 'success');
+            //                 }
+            //             });
+            //         }
+            //     });
+            // });
         });
     </script>
 
