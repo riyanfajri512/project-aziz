@@ -16,6 +16,20 @@
     <link href="{{ asset('template/assets/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/css/auth.css') }}" rel="stylesheet">
     <link href="{{ asset('css/sweetalert2.css') }}" rel="stylesheet">
+
+
+    <style>
+        body {
+            background: url('{{ asset('img/background.png') }}') no-repeat center center fixed;
+            background-size: cover;
+        }
+
+        .auth-content {
+            background-color: rgba(255, 255, 255, 0.9); /* supaya form tetap terlihat jelas */
+            padding: 2rem;
+            border-radius: 10px;
+        }
+    </style>
 </head>
 
 <body>
