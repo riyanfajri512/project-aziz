@@ -241,19 +241,19 @@
 @endsection
 @section('script')
     <script>
-        // let sparepartHistory = [{
-        //         kode: "Mtr-001",
-        //         jenis: "Motor",
-        //         nama: "Kampas Rem",
-        //         harga: 50000
-        //     },
-        //     {
-        //         kode: "MOB-001",
-        //         jenis: "Mobil",
-        //         nama: "Filter Oli",
-        //         harga: 75000
-        //     }
-        // ];
+        let sparepartHistory = [{
+                kode: "Mtr-001",
+                jenis: "Motor",
+                nama: "Kampas Rem",
+                harga: 50000
+            },
+            {
+                kode: "MOB-001",
+                jenis: "Mobil",
+                nama: "Filter Oli",
+                harga: 75000
+            }
+        ];
 
         function updateTotal() {
             let total = 0;
