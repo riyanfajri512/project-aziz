@@ -31,6 +31,50 @@
         </div>
     </div>
 
+    <!-- Modal to Show Rejection Reason -->
+    <div class="modal fade" id="showReasonModal" tabindex="-1" aria-labelledby="showReasonModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-warning">
+                    <h5 class="modal-title" id="showReasonModalLabel">Rejection Reason</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p id="rejectionReasonText" style="white-space: pre-line;">No reason provided</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Reject -->
+    <div class="modal fade" id="rejectModal" tabindex="-1" aria-labelledby="rejectModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form id="rejectForm" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rejectModalLabel">Tolak Permintaan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" name="id" id="reject_id">
+                        <div class="form-group">
+                            <label for="alasan_reject">Alasan Penolakan</label>
+                            <textarea name="alasan_reject" id="alasan_reject" class="form-control" rows="5" required></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-danger">Kirim Penolakan</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <div class="content">
         <div class="container">
             <div class="page-title">
@@ -57,8 +101,8 @@
                                             <th>Status</th>
                                             <th>Kode Pemesanan</th>
                                             <th>Unit Pembuat</th>
-                                            <th>Cabang</th>
                                             <th>Lokasi</th>
+                                            <th>Cabang</th>
                                             <th>Tanggal</th>
                                             <th>Supplier</th>
                                             <th>Total</th>
@@ -79,7 +123,7 @@
 
     <script>
         $(document).ready(function() {
-            $('#tabelPermintaan').DataTable({
+            let table = $('#tabelPermintaan').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: "{{ route('permintaan.list') }}",
@@ -223,85 +267,75 @@
                         }
                     });
                 });
+            });
 
-                // Approve Button Click Handler (if you have approve button in your datatable)
-                $(document).on('click', '.approve-btn', function() {
+            // Approve Button Click Handler (if you have approve button in your datatable)
+            $(document).on('click', '.approve-btn', function() {
+                var id = $(this).data('id');
+
+                Swal.fire({
+                    title: 'Setujui Permintaan?',
+                    text: "Anda akan menyetujui permintaan ini",
+                    icon: 'question',
+                    showCancelButton: true,
+                    confirmButtonColor: '#198754',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Ya, Setujui!',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.post('/permintaan/' + id + '/approve', {
+                            _token: $('meta[name="csrf-token"]').attr('content')
+                        }).done(() => {
+                            Swal.fire('Disetujui!',
+                                'Permintaan telah disetujui', 'success');
+                            $('.dataTable').DataTable().ajax.reload();
+                        }).fail(() => {
+                            Swal.fire('Error!', 'Gagal menyetujui permintaan',
+                                'error');
+                        });
+                    }
+                });
+            });
+
+
+
+            $(document).ready(function() {
+                // Set ID permintaan saat tombol reject diklik
+                $(document).on('click', '.reject-btn', function() {
                     var id = $(this).data('id');
+                    $('#reject_id').val(id);
+                });
 
-                    Swal.fire({
-                        title: 'Setujui Permintaan?',
-                        text: "Anda akan menyetujui permintaan ini",
-                        icon: 'question',
-                        showCancelButton: true,
-                        confirmButtonColor: '#198754',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: 'Ya, Setujui!',
-                        cancelButtonText: 'Batal'
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            $.post('/permintaan/' + id + '/approve', {
-                                _token: $('meta[name="csrf-token"]').attr('content')
-                            }).done(() => {
-                                Swal.fire('Disetujui!',
-                                    'Permintaan telah disetujui', 'success');
-                                $('.dataTable').DataTable().ajax.reload();
-                            }).fail(() => {
-                                Swal.fire('Error!', 'Gagal menyetujui permintaan',
-                                    'error');
-                            });
+                // Submit form reject via Ajax
+                $('#rejectForm').submit(function(e) {
+                    e.preventDefault();
+                    var formData = $(this).serialize();
+                    var url = "{{ route('permintaan.reject', ':id') }}".replace(':id',
+                        $('#reject_id').val());
+
+                    $.ajax({
+                        url: url,
+                        type: 'POST',
+                        data: formData,
+                        success: function(response) {
+                            $('#rejectModal').modal('hide');
+                            Swal.fire('Sukses!', response.message,
+                                'success');
+                            $('.dataTable').DataTable().ajax.reload();
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error!', xhr.responseJSON.message,
+                                'error');
                         }
                     });
                 });
             });
 
-
-            // function showAlert(type, title, message) {
-            //     const Toast = Swal.mixin({
-            //         toast: true,
-            //         position: 'top-end',
-            //         showConfirmButton: false,
-            //         timer: 3000,
-            //         timerProgressBar: true,
-            //         didOpen: (toast) => {
-            //             toast.addEventListener('mouseenter', Swal.stopTimer)
-            //             toast.addEventListener('mouseleave', Swal.resumeTimer)
-            //         }
-            //     });
-
-            //     Toast.fire({
-            //         icon: type,
-            //         title: title,
-            //         text: message
-            //     });
-            // }
-
-            // Handle Approve Button
-            // $(document).on('click', '.approve-btn', function() {
-            //     var id = $(this).data('id');
-            //     Swal.fire({
-            //         title: 'Setujui Permintaan?',
-            //         text: "Pastikan semua data sudah benar!",
-            //         icon: 'question',
-            //         showCancelButton: true,
-            //         confirmButtonColor: '#28a745',
-            //         cancelButtonColor: '#3085d6',
-            //         confirmButtonText: 'Ya, Setujui!'
-            //     }).then((result) => {
-            //         if (result.isConfirmed) {
-            //             $.ajax({
-            //                 url: '/permintaan/' + id + '/approve',
-            //                 type: 'POST',
-            //                 data: {
-            //                     _token: "{{ csrf_token() }}"
-            //                 },
-            //                 success: function(response) {
-            //                     $('#permintaan-table').DataTable().ajax.reload();
-            //                     Swal.fire('Disetujui!', response.message, 'success');
-            //                 }
-            //             });
-            //         }
-            //     });
-            // });
+            $(document).on('click', '.show-reason-btn', function() {
+                var reason = $(this).data('reason');
+                $('#rejectionReasonText').text(reason);
+            });
         });
     </script>
 

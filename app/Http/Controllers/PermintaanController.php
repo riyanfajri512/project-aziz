@@ -65,20 +65,38 @@ class PermintaanController extends Controller
             ->addColumn('action', function($data) {
                 $btn = '<div class="btn-group">';
 
-                // View Button with modal trigger
+                // View Button
                 $btn .= '<button class="btn btn-sm btn-info view-btn" data-id="'.$data->id.'" data-bs-toggle="modal" data-bs-target="#detailModal" title="View">
                             <i class="fas fa-eye"></i>
                          </button>';
 
-                // Approve Button (only for pending status)
+                // Approve & Reject Buttons (only for pending status)
                 if(($data->status->nama ?? 'Pending') == 'Pending') {
                     $btn .= '<button class="btn btn-sm btn-success approve-btn" data-id="'.$data->id.'" title="Approve">
                                 <i class="fas fa-check"></i>
                              </button>';
+                    $btn .= '<button class="btn btn-sm btn-danger reject-btn"
+                             data-id="'.$data->id.'"
+                             data-bs-toggle="modal"
+                             data-bs-target="#rejectModal"
+                             title="Reject">
+                                <i class="fas fa-times"></i>
+                             </button>';
+                }
+                // Show Rejection Reason Button (if status is Rejected)
+                elseif(($data->status->nama ?? '') == 'Rejected') {
+                    $btn .= '<button class="btn btn-sm btn-warning show-reason-btn"
+                             data-id="'.$data->id.'"
+                             data-reason="'.htmlspecialchars($data->alasan_reject ?? 'No reason provided').'"
+                             data-bs-toggle="modal"
+                             data-bs-target="#showReasonModal"
+                             title="View Rejection Reason">
+                                <i class="fas fa-comment-alt"></i>
+                             </button>';
                 }
 
                 // Export Button
-                $btn .= '<a href="'.route('permintaan.export', $data->id).'" class="btn btn-sm btn-secondary"  target="_blank" title="Export PDF">
+                $btn .= '<a href="'.route('permintaan.export', $data->id).'" class="btn btn-sm btn-secondary" target="_blank" title="Export PDF">
                             <i class="fas fa-file-pdf"></i>
                          </a>';
 
@@ -140,8 +158,8 @@ class PermintaanController extends Controller
 
             // Handle file upload
             if ($request->hasFile('file')) {
-                $filePath = $request->file('file')->store('permintaan_files');
-                $validated['file_path'] = $filePath;
+                $filePath = $request->file('file')->store('public/permintaan_files');
+                $validated['file_path'] = str_replace('public/', '', $filePath); // Simpan path tanpa 'public/'
             }
 
             // Proses items - gunakan format array jika ada, jika tidak gunakan JSON
@@ -238,11 +256,31 @@ class PermintaanController extends Controller
     public function approve($id)
     {
         $permintaan = Permintaan::findOrFail($id);
-        $permintaan->update(['status' => 'approved']);
+
+        $permintaan->update(['status_id' => 2]);
 
         return response()->json([
             'success' => true,
             'message' => 'Permintaan berhasil disetujui'
+        ]);
+    }
+
+    public function reject(Request $request, $id)
+    {
+        $request->validate([
+            'alasan_reject' => 'required|string|max:2000'
+        ]);
+
+        $permintaan = Permintaan::findOrFail($id);
+
+        $permintaan->update([
+            'status_id' => 3,
+            'alasan_reject' => $request->alasan_reject
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Permintaan berhasil ditolak'
         ]);
     }
 
