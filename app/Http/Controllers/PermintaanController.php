@@ -308,7 +308,7 @@ class PermintaanController extends Controller
             $permintaan = Permintaan::findOrFail($id);
 
             // Hanya boleh hapus jika status pending
-            if ($permintaan->status !== 'pending') {
+            if ($permintaan->status_id !== 1) {
                 return response()->json([
                     'success' => false,
                     'message' => 'Hanya permintaan dengan status pending yang bisa dihapus'
