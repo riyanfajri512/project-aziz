@@ -97,15 +97,15 @@
                                             <tr class="item-row">
                                                 <td>
                                                     <input type="text" class="form-control" name="items[0][kode_sparepart]"
-                                                        placeholder="Kode Sparepart" required>
+                                                        placeholder="Kode Sparepart" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-center"
-                                                        name="items[0][qty]" min="1" value="1" required>
+                                                        name="items[0][qty]" min="1" value="1" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-center"
-                                                        name="items[0][permintaan]" min="0" value="0" required>
+                                                        name="items[0][permintaan]" min="0" value="0" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-center"
@@ -113,7 +113,7 @@
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-right"
-                                                        name="items[0][harga]" min="0" value="0" required>
+                                                        name="items[0][harga]" min="0" value="0" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="text" class="form-control text-right item-total" value="0"
@@ -158,15 +158,15 @@
                                             <tr class="item-row">
                                                 <td>
                                                     <input type="text" class="form-control" name="items[0][kode_sparepart]"
-                                                        placeholder="Kode Sparepart" required>
+                                                        placeholder="Kode Sparepart" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-center"
-                                                        name="items[0][qty]" min="1" value="1" required>
+                                                        name="items[0][qty]" min="1" value="1" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-center"
-                                                        name="items[0][permintaan]" min="0" value="0" required>
+                                                        name="items[0][permintaan]" min="0" value="0" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-center"
@@ -174,7 +174,7 @@
                                                 </td>
                                                 <td>
                                                     <input type="number" class="form-control text-right"
-                                                        name="items[0][harga]" min="0" value="0" required>
+                                                        name="items[0][harga]" min="0" value="0" readonly>
                                                 </td>
                                                 <td>
                                                     <input type="text" class="form-control text-right item-total" value="0"
