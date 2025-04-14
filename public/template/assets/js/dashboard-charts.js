@@ -1,66 +1,104 @@
-var trafficchart = document.getElementById("trafficflow");
-var saleschart = document.getElementById("sales");
+// Data untuk chart
+const chartData = {
+  labels: [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "Mei",
+    "Jun",
+    "Jul",
+    "Ags",
+    "Sep",
+    "Okt",
+    "Nov",
+    "Des",
+  ],
+  datasets: [
+    {
+      label: "Sparepart Keluar",
+      data: [45, 60, 55, 80, 65, 70, 85, 75, 90, 110, 95, 120],
+      backgroundColor: "rgba(255, 99, 132, 0.7)", // Merah
+      borderColor: "rgba(255, 99, 132, 1)",
+      borderWidth: 1,
+    },
+    {
+      label: "Sparepart Masuk",
+      data: [60, 70, 65, 75, 80, 85, 75, 95, 100, 90, 115, 130],
+      backgroundColor: "rgba(75, 192, 192, 0.7)", // Hijau
+      borderColor: "rgba(75, 192, 192, 1)",
+      borderWidth: 1,
+    },
+  ],
+};
 
-// new
-var myChart1 = new Chart(trafficchart, {
-type: 'line',
-data: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [{
-        data: ['1135', '1135', '1140', '1168', '1150', '1145', '1155', '1155', '1150', '1160', '1185', '1190'],
-        backgroundColor: "rgba(48, 164, 255, 0.2)",
-        borderColor: "rgba(48, 164, 255, 0.8)",
-        fill: true,
-        borderWidth: 1
-    }]
-},
-options: {
-    animation: {
-        duration: 2000,
-        easing: 'easeOutQuart',
-    },
+// Inisialisasi chart
+const distribusiChart = document.getElementById("distribusiChart");
+const myChart = new Chart(distribusiChart, {
+  type: "bar",
+  data: chartData,
+  options: {
+    responsive: true,
     plugins: {
-        legend: {
-            display: false,
-            position: 'right',
+      title: {
+        display: true,
+        text: "Distribusi Sparepart",
+        font: { size: 16 },
+      },
+      tooltip: {
+        callbacks: {
+          label: (ctx) => `${ctx.dataset.label}: ${ctx.raw} unit`,
         },
-        title: {
-            display: true,
-            text: 'Number of Visitors',
-            position: 'left',
-        },
+      },
     },
-}
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: { display: true, text: "Jumlah Unit" },
+        ticks: { stepSize: 20 },
+      },
+      x: {
+        title: { display: true, text: "Bulan" },
+      },
+    },
+  },
 });
 
-// new
-var myChart2 = new Chart(saleschart, {
-type: 'bar',
-data: {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [{
-            label: 'Income',
-            data: ["280", "300", "400", "600", "450", "400", "500", "550", "450", "650", "950", "1000"],
-            backgroundColor: "rgba(76, 175, 80, 0.5)",
-            borderColor: "#6da252",
-            borderWidth: 1,
-    }]
-},
-options: {
-    animation: {
-        duration: 2000,
-        easing: 'easeOutQuart',
-    },
-    plugins: {
-        legend: {
-            display: false,
-            position: 'top',
+// Filter bulan (contoh implementasi sederhana)
+document
+  .querySelector('input[type="month"]')
+  .addEventListener("change", (e) => {
+    const [year, month] = e.target.value.split("-");
+
+    // Contoh filter sederhana (dalam real project, ganti dengan data aktual)
+    const monthIndex = parseInt(month) - 1;
+    const filteredData = {
+      labels: [chartData.labels[monthIndex]],
+      datasets: [
+        {
+          ...chartData.datasets[0],
+          data: [chartData.datasets[0].data[monthIndex]],
         },
-        title: {
-            display: true,
-            text: 'Number of Sales',
-            position: 'left',
+        {
+          ...chartData.datasets[1],
+          data: [chartData.datasets[1].data[monthIndex]],
         },
-    },
-}
+      ],
+    };
+
+    myChart.data = filteredData;
+    myChart.update();
+  });
+
+document.getElementById("resetFilter").addEventListener("click", function () {
+  try {
+    myChart.data.labels = chartData.labels;
+    myChart.data.datasets.forEach((dataset, i) => {
+      dataset.data = chartData.datasets[i].data;
+    });
+    myChart.update();
+    document.querySelector('input[type="month"]').value = "";
+  } catch (error) {
+    location.reload();
+  }
 });

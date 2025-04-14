@@ -16,6 +16,7 @@
     <link href="{{ asset('template/assets/css/master.css') }}" rel="stylesheet">
     <link href="{{ asset('css/sweetalert2.css') }}" rel="stylesheet">
     <link href="{{ asset('template/assets/vendor/flagiconcss/css/flag-icon.min.css') }}" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 </head>
 
 <body>
@@ -152,6 +153,7 @@
     <script src="{{ asset('template/assets/vendor/chartsjs/Chart.min.js') }}"></script>
     <script src="{{ asset('template/assets/js/dashboard-charts.js') }}"></script>
     <script src="{{ asset('template/assets/js/script.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="{{ asset('js/sweetalert2.js') }}"></script>
 
     <script>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\JenisKendaraan;
 use App\Models\Lokasi;
 use App\Models\Permintaan;
+use App\Models\Sp;
 use App\Models\Status;
 use App\Models\Supplier;
 use Barryvdh\DomPDF\PDF;
@@ -124,6 +125,7 @@ class PermintaanController extends Controller
         $lokasiList = Lokasi::all();
         $jenisList = JenisKendaraan::all();
         $suplierList = Supplier::all();
+        $spareparts = Sp::all();
 
         // Generate kode pemesanan
         $lastPermintaan = Permintaan::orderBy('id', 'desc')->first();
@@ -134,6 +136,7 @@ class PermintaanController extends Controller
             'lokasiList' => $lokasiList,
             'jenisList' => $jenisList,
             'suplierList' => $suplierList,
+            'spareparts' => $spareparts,
             'kodePemesanan' => $kodePemesanan
         ]);
     }
