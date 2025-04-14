@@ -29,47 +29,16 @@
         .input-group-text {
             background-color: #e9ecef;
         }
-    </style>
 
-    <div class="modal fade" id="searchSparepartModal" tabindex="-1" role="dialog" aria-labelledby="searchSparepartModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="searchSparepartModalLabel">Cari Sparepart yang Pernah Dibuat</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="searchSparepartInput">Cari Sparepart:</label>
-                        <input type="text" class="form-control" id="searchSparepartInput"
-                            placeholder="Masukkan kode atau nama sparepart...">
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-bordered table-hover">
-                            <thead>
-                                <tr>
-                                    <th>Kode</th>
-                                    <th>Nama</th>
-                                    <th>Jenis Kendaraan</th>
-                                    <th>Harga</th>
-                                    <th>Aksi</th>
-                                </tr>
-                            </thead>
-                            <tbody id="sparepartSearchResults">
-                                <!-- Hasil pencarian akan muncul di sini -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
-                </div>
-            </div>
-        </div>
-    </div>
+        .select2-container .select2-selection--single {
+            height: 38px;
+            padding-top: 5px;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__arrow {
+            height: 36px;
+        }
+    </style>
 
     <div class="content">
         <div class="container">
@@ -111,10 +80,26 @@
                                             </select>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">File</label>
-                                            <input type="file" class="form-control" name="file">
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
+                                        <div class="row mt-3">
+                                            <div class="col-md-10">
+                                                <label class="form-label">Search Sparepart</label>
+                                                <select class="form-control select2-sparepart" id="sparepart-search">
+                                                    <option value="">-- Pilih Sparepart --</option>
+                                                    @foreach ($spareparts as $sp)
+                                                        <option value="{{ $sp->id }}" data-kode="{{ $sp->kode }}"
+                                                            data-nama="{{ $sp->nama }}" data-harga="{{ $sp->harga }}"
+                                                            data-jenis="{{ $sp->jenis }}">
+                                                            {{ $sp->kode }} - {{ $sp->nama }}
+                                                            ({{ $sp->jenis }})
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                            </div>
+                                            <div class="col-md-2 d-flex align-items-end">
+                                                <button type="button" class="btn btn-primary" id="btn-add-sparepart">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -134,6 +119,12 @@
                                                     </option>
                                                 @endforeach
                                             </select>
+                                            <small class="text-danger d-none">Field ini wajib diisi</small>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label">File</label>
+                                            <input type="file" class="form-control" name="file">
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
 
@@ -241,104 +232,132 @@
 @endsection
 @section('script')
     <script>
-        let sparepartHistory = [{
-                kode: "Mtr-001",
-                jenis: "Motor",
-                nama: "Kampas Rem",
-                harga: 50000
-            },
-            {
-                kode: "MOB-001",
-                jenis: "Mobil",
-                nama: "Filter Oli",
-                harga: 75000
-            }
-        ];
+        $('.select2-sparepart').select2({
+            placeholder: "Cari sparepart...",
+            allowClear: true
+        });
 
+        // Variabel untuk menyimpan sparepart yang sudah dipilih
+        let selectedSpareparts = [];
+        let sparepartHistory = @json($spareparts->toArray());
+
+        // Fungsi untuk menambahkan sparepart ke tabel
+        $('#btn-add-sparepart').click(function() {
+            const selectElement = $('#sparepart-search');
+            const selectedOption = selectElement.find('option:selected');
+            const sparepartId = selectedOption.val();
+
+            if (!sparepartId) {
+                Swal.fire({
+                            icon: 'error',
+                            title: 'Search kosong',
+                            text: 'Silahkan pilih sparepart terlebih dahulu',
+                            confirmButtonText: 'OK'
+                        })
+                return;
+            }
+
+            if (selectedSpareparts.includes(sparepartId)) {
+                Swal.fire({
+                            icon: 'error',
+                            title: 'Duplikat sparepart',
+                            text: 'Sparepart ini sudah ditambahkan!',
+                            confirmButtonText: 'OK'
+                        })
+                return;
+            }
+
+            selectedSpareparts.push(sparepartId);
+
+            const kode = selectedOption.data('kode');
+            const nama = selectedOption.data('nama');
+            const jenis = selectedOption.data('jenis');
+            const harga = selectedOption.data('harga');
+
+            const newRow = `
+            <tr data-id="${sparepartId}">
+                <td>
+                    <input type="text" class="form-control kode" name="kode_sparepart[]" value="${kode}" readonly>
+                </td>
+                <td>
+                    <input type="text" class="form-control jenis" name="jenis_kendaraan[]" value="${jenis}" readonly>
+                </td>
+                <td>
+                    <input type="text" class="form-control nama" name="nama_sparepart[]" value="${nama}" readonly>
+                </td>
+                <td class="text-center">
+                    <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
+                </td>
+                <td class="text-right">
+                    <input type="number" class="form-control harga text-right" name="harga[]" value="${harga}">
+                </td>
+                <td class="text-right">
+                    <input type="text" class="form-control total text-right" name="total_harga[]" value="${harga}" readonly>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm remove-item">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+
+            $('#items-container').append(newRow);
+            selectElement.val('').trigger('change');
+            updateTotal();
+        });
+
+        function generateRow() {
+            return `
+            <tr>
+                <td>
+                    <input type="text" class="form-control kode" name="kode_sparepart[]" list="sparepart-list">
+                </td>
+                <td>
+                    <select class="form-control jenis" name="jenis_kendaraan[]">
+                        <option value="">Pilih</option>
+                        @foreach ($jenisList as $jenis)
+                            <option value="{{ $jenis->nama }}">{{ $jenis->nama }}</option>
+                        @endforeach
+                    </select>
+                </td>
+                <td>
+                    <input type="text" class="form-control nama" name="nama_sparepart[]">
+                </td>
+                <td class="text-center">
+                    <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
+                </td>
+                <td class="text-right">
+                    <input type="number" class="form-control harga text-right" name="harga[]" value="0">
+                </td>
+                <td class="text-right">
+                    <input type="text" class="form-control total text-right" name="total_harga[]" value="0" readonly>
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm remove-item">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        }
+
+        // Fungsi untuk update total
         function updateTotal() {
             let total = 0;
             $('#items-container tr').each(function() {
                 let qty = parseInt($(this).find('.qty').val()) || 0;
                 let harga = parseInt($(this).find('.harga').val()) || 0;
-                total += qty * harga;
+                let rowTotal = qty * harga;
+                $(this).find('.total').val(rowTotal.toLocaleString('id-ID'));
+                total += rowTotal;
             });
             $('#total_payment').val(total.toLocaleString('id-ID'));
         }
 
-        function slugify(str) {
-            return str.toUpperCase().replace(/\s+/g, '-').replace(/[^A-Z0-9-]/g, '');
-        }
-
-        function generateKode(jenis) {
-            let prefix = jenis.trim();
-
-            // Hitung jumlah data sparepart dari history
-            let countFromHistory = sparepartHistory.filter(sp => sp.jenis === jenis).length;
-
-            // Hitung jumlah baris yang sedang aktif di tabel dengan jenis yang sama (yang belum masuk ke history)
-            let countInTable = 0;
-            $('#items-container tr').each(function() {
-                let rowJenis = $(this).find('.jenis').val();
-                let rowKode = $(this).find('.kode').val();
-                if (rowJenis === jenis && rowKode && rowKode.startsWith(prefix + '-')) {
-                    countInTable++;
-                }
-            });
-
-            let totalCount = countFromHistory + countInTable + 1;
-
-            return `${prefix}-${totalCount.toString().padStart(3, '0')}`;
-        }
-
-        function generateRow() {
-            return `
-       <tr>
-    <td>
-        <input type="text" class="form-control kode" name="kode_sparepart[]" list="sparepart-list">
-    </td>
-    <td>
-        <select class="form-control jenis" name="jenis_kendaraan[]">
-            <option value="">Pilih</option>
-            @foreach ($jenisList as $jenis)
-                <option value="{{ $jenis->singkatan }}">{{ $jenis->nama }}</option>
-            @endforeach
-        </select>
-    </td>
-    <td>
-        <input type="text" class="form-control nama" name="nama_sparepart[]">
-    </td>
-    <td class="text-center">
-        <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
-    </td>
-    <td class="text-right">
-        <input type="number" class="form-control harga text-right" name="harga[]" value="0">
-    </td>
-    <td class="text-right">
-        <input type="text" class="form-control total text-right" name="total_harga[]" value="0" readonly>
-    </td>
-    <td class="text-center">
-        <button type="button" class="btn btn-danger btn-sm remove-item">
-            <i class="fas fa-trash"></i>
-        </button>
-    </td>
-</tr>
-
-    `;
-        }
-
-        function populateDatalist() {
-            let datalist = $('#sparepart-list');
-            datalist.empty();
-            sparepartHistory.forEach(sp => {
-                datalist.append(`<option value="${sp.kode}">${sp.nama} - ${sp.jenis}</option>`);
-            });
-        }
 
 
         $(document).ready(function() {
-
-
-            populateDatalist();
 
             // Preview PDF sebelum upload
             $('input[name="file"]').change(function(e) {
@@ -383,36 +402,55 @@
             }
 
 
-            $('#add-item-button').on('click', function() {
+            // Fungsi untuk menambahkan baris kosong
+            $('#add-item-button').click(function() {
                 $('#items-container').append(generateRow());
             });
 
+
+            // Event delegation untuk input qty dan harga
             $('#items-container').on('input', '.qty, .harga', function() {
-                let row = $(this).closest('tr');
-                let qty = parseInt(row.find('.qty').val()) || 0;
-                let harga = parseInt(row.find('.harga').val()) || 0;
-                let total = qty * harga;
-                row.find('.total').val(total.toLocaleString('id-ID'));
                 updateTotal();
             });
 
-            // Jika user pilih kode dari datalist
-            $('#items-container').on('change', '.kode', function() {
-                let kode = $(this).val();
-                let row = $(this).closest('tr');
-                let found = sparepartHistory.find(sp => sp.kode === kode);
-                if (found) {
-                    row.find('.jenis').val(found.jenis);
-                    row.find('.nama').val(found.nama);
-                    row.find('.harga').val(found.harga);
-                    row.find('.qty').val(1).trigger('input');
+            // Event delegation untuk tombol hapus
+            $('#items-container').on('click', '.remove-item', function() {
+                const row = $(this).closest('tr');
+                const sparepartId = row.data('id');
+
+                // Hapus dari array selected jika ada
+                if (sparepartId) {
+                    selectedSpareparts = selectedSpareparts.filter(id => id !== sparepartId);
                 }
+
+                row.remove();
+                updateTotal();
             });
 
+            // Fungsi untuk generate kode otomatis
+            function generateKode(jenis) {
+                let prefix = jenis.trim();
+                let countFromHistory = sparepartHistory.filter(sp => sp.jenis === jenis).length;
+                let countInTable = 0;
+
+                $('#items-container tr').each(function() {
+                    let rowJenis = $(this).find('.jenis').val();
+                    let rowKode = $(this).find('.kode').val();
+                    if (rowJenis === jenis && rowKode && rowKode.startsWith(prefix + '-')) {
+                        countInTable++;
+                    }
+                });
+
+                let totalCount = countFromHistory + countInTable + 1;
+                return `${prefix}-${totalCount.toString().padStart(3, '0')}`;
+            }
+
+            // Jika user mengubah jenis atau nama pada baris kosong
             $('#items-container').on('change', '.jenis, .nama', function() {
                 let row = $(this).closest('tr');
                 let jenis = row.find('.jenis').val();
                 let nama = row.find('.nama').val().trim();
+
                 if (jenis && nama) {
                     let existing = sparepartHistory.find(sp => sp.jenis === jenis && sp.nama === nama);
                     if (!existing) {
@@ -423,11 +461,6 @@
                         row.find('.harga').val(existing.harga);
                     }
                 }
-            });
-
-            $('#items-container').on('click', '.remove-item', function() {
-                $(this).closest('tr').remove();
-                updateTotal();
             });
 
             $('#formPermintaan').on('submit', function(e) {

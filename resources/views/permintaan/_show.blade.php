@@ -31,6 +31,21 @@
                             <p><strong>Lokasi:</strong><br> {{ $permintaan->lokasi->nama ?? '-' }} ({{ $permintaan->lokasi->unit ?? '-' }})</p>
                         </div>
                     </div>
+
+                    <!-- Tambahan untuk menampilkan file -->
+                    @if($permintaan->file_path)
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <p><strong>Dokumen Pendukung:</strong><br>
+                                <a href="{{ asset('storage/' . $permintaan->file_path) }}"
+                                   target="_blank"
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye me-1"></i> Preview Dokumen
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
