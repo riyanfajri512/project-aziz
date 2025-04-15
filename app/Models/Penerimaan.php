@@ -8,11 +8,13 @@ use Illuminate\Database\Eloquent\Model;
 class Penerimaan extends Model
 {
     use HasFactory;
-    
+
     protected $table = 'tbl_penerimaan';
-    protected $primaryKey = 'permintaan_id'; // Tambahkan ini
-    public $incrementing = false; // Karena permintaan_id bukan auto-increment
-    
+    protected $casts = [
+        'tanggal' => 'date',
+        // ... casts lainnya
+    ];
+
     protected $fillable = [
         'kode_penerimaan',
         'permintaan_id',
@@ -21,10 +23,6 @@ class Penerimaan extends Model
         'grand_total',
     ];
 
-    protected $casts = [
-        'tanggal' => 'date',
-        'grand_total' => 'decimal:2',
-    ];
 
     public function permintaan()
     {
@@ -40,8 +38,6 @@ class Penerimaan extends Model
     // Relasi yang diperbaiki:
     public function items()
     {
-        // Relasi ke PenerimaanItem, dimana penerimaan_id di tbl_penerimaan_items
-        // merujuk ke permintaan_id di tbl_penerimaan
         return $this->hasMany(PenerimaanItem::class, 'penerimaan_id', 'permintaan_id');
     }
 }
