@@ -262,9 +262,58 @@ class PenerimaanController extends Controller
 
     public function edit($id)
     {
-        $penerimaan = Penerimaan::with(['items'])->findOrFail($id);
-        return view('penerimaan.indexedit', compact('penerimaan'));
+        $penerimaan = Penerimaan::findOrFail($id);
+        $permintaanList = Permintaan::all(); // Jika kamu butuh daftar permintaan
+    
+        // Kalau kamu ingin generate ulang kode penerimaan
+        $kodePenerimaan = $penerimaan->kode_penerimaan; // Atau generate baru jika diinginkan
+    
+        return view('penerimaan.penerimaanedit', [
+            'penerimaan' => $penerimaan,
+            'permintaanList' => $permintaanList,
+            'kodePenerimaan' => $kodePenerimaan,
+        ]);
     }
 
-
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'deskripsi' => 'nullable|string',
+            'items' => 'required|array',
+            'items.*.qty_diterima' => 'required|numeric|min:0'
+        ]);
+    
+        try {
+            $penerimaan = Penerimaan::findOrFail($id);
+            $penerimaan->update($validated);
+    
+            // Update items
+            foreach ($request->items as $itemId => $itemData) {
+                $penerimaanItem = $penerimaan->items()
+                    ->where('id', $itemId)
+                    ->firstOrFail();
+                    
+                $penerimaanItem->update([
+                    'qty_diterima' => $itemData['qty_diterima'],
+                    'total_harga' => $itemData['qty_diterima'] * $penerimaanItem->harga
+                ]);
+            }
+    
+            // Hitung ulang grand total
+            $grandTotal = $penerimaan->items()->sum('total_harga');
+            $penerimaan->update(['grand_total' => $grandTotal]);
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Penerimaan berhasil diperbarui'
+            ]);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui penerimaan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }

@@ -34,9 +34,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/permintaan/{id}/reject', [PermintaanController::class, 'reject'])->name('permintaan.reject');
     Route::get('/permintaan/{id}/export', [PermintaanController::class, 'exportPdf'])->name('permintaan.export');
     Route::delete('/permintaan/{id}', [PermintaanController::class, 'destroy'])->name('permintaan.destroy');
-    Route::put('/permintaan/{id}', [PermintaanController::class, 'update'])->name('permintaan.update');
-  
-
+    Route::put('/penerimaan/{id}', [PenerimaanController::class, 'update'])->name('penerimaan.update');
+    
+    
 
     // Penerimaan
     Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan.index');
@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/penerimaan/{id}/export', [PenerimaanController::class, 'exportPdf'])->name('penerimaan.export');
     route::delete('/penerimaan/{id}', [PenerimaanController::class, 'destroy'])->name('penerimaan.destroy');
     Route::get('/penerimaan/{id}/detail', [PenerimaanController::class, 'showDetail'])->name('penerimaan.detail');
+    route::get('/penerimaan/{id}/edit', [PenerimaanController::class, 'edit'])->name('penerimaan.edit');
+    Route::put('/penerimaan/{id}', [PenerimaanController::class, 'update'])->name('penerimaan.update');
 
 
     // Pendistribusian
@@ -96,7 +98,3 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/{id}/restore', [UserController::class, 'restore'])->name('user.restore');
     Route::delete('/{id}/force-delete', [UserController::class, 'forceDelete'])->name('user.force-delete');
 });
-
-
-
-
