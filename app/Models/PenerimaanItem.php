@@ -16,6 +16,7 @@ class PenerimaanItem extends Model
         'jenis_kendaraan',
         'nama_sparepart',
         'qty',
+        'qty_diterima',
         'harga',
         'total_harga',
         'belance',
@@ -30,7 +31,7 @@ class PenerimaanItem extends Model
     // Relasi ke Sparepart
     public function sparepart()
     {
-        return $this->belongsTo(Sparepart::class, 'sparepart_id');
+        return $this->belongsTo(Sp::class, 'sparepart_id');
     }
 
     // Relasi ke Item Permintaan

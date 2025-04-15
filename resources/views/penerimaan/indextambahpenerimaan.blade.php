@@ -50,7 +50,7 @@
                         </div>
 
                         <div class="card-body">
-                            <form id="formPenerimaan" action="{{ route('penerimaan.simpan') }}" method="POST">
+                            <form id="formPenerimaan" action="/penerimaan/simpan">
                                 @csrf
                                 <div class="row">
                                     <div class="col-md-6">
@@ -59,9 +59,7 @@
                                             <select class="form-control" name="permintaan_id" id="select-permintaan">
                                                 <option value="">Pilih Permintaan</option>
                                                 @foreach ($permintaanList as $permintaan)
-                                                    <option value="{{ $permintaan->id }}"
-                                                        data-tanggal="{{ $permintaan->tanggal }}"
-                                                        data-user="{{ optional($permintaan->user)->name }}">
+                                                    <option value="{{ $permintaan->id }}">
                                                         {{ $permintaan->kode_pemesanan }}
                                                     </option>
                                                 @endforeach
@@ -76,8 +74,8 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Tanggal</label>
-                                            <input type="date" class="form-control" id="tanggal-permintaan" name="tanggal"
-                                                required>
+                                            <input type="date" class="form-control" id="tanggal-permintaan"
+                                                name="tanggal" required>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Kode Penerimaan</label>
@@ -87,23 +85,17 @@
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
-                                    <button type="button" class="btn btn-primary" id="add-item-button">
-                                        <i class="fas fa-plus"></i> Tambah Item
-                                    </button>
-                                </div>
-
                                 <div class="table-responsive mt-3">
                                     <table class="table" id="tabel-sparepart">
                                         <thead class="thead-light">
                                             <tr>
-                                                <th>Kode Sparepart</th>
+                                                <th>Kode sparepart</th>
+                                                <th>Jenis kendaraan</th>
+                                                <th>Nama sparepart</th>
                                                 <th class="text-center">Qty</th>
-                                                <th class="text-center">Permintaan</th>
-                                                <th class="text-center">Penerimaan</th>
+                                                <th class="text-center">Qty diterima</th>
                                                 <th class="text-right">Harga</th>
                                                 <th class="text-right">Total</th>
-                                                <th class="text-center">Aksi</th>
                                             </tr>
                                         </thead>
 
@@ -125,6 +117,14 @@
                                     </table>
                                 </div>
 
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label">Deskripsi/Catatan</label>
+                                        <textarea class="form-control" name="deskripsi"></textarea>
+                                        <small class="text-danger d-none">Field ini wajib diisi</small>
+                                    </div>
+                                </div>
+
                                 <div class="d-flex justify-content-end mt-3">
                                     <button type="submit" class="btn btn-primary">Simpan</button>
                                     <button type="reset" class="btn btn-secondary ms-2">Batal</button>
@@ -140,37 +140,126 @@
 
 @section('script')
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
             // Variabel untuk menyimpan data permintaan yang dipilih
             let selectedPermintaan = null;
 
-            // Event ketika permintaan dipilih
-            $('#select-permintaan').change(function () {
+            // Fungsi untuk menghitung ulang grand total
+            function recalculateGrandTotal() {
+                let grandTotal = 0;
+
+                $('.item-total').each(function() {
+                    const totalText = $(this).text().replace(/[^\d]/g, '');
+                    grandTotal += parseFloat(totalText) || 0;
+                });
+
+                $('#grand-total').text(formatRupiah(grandTotal.toString()));
+            }
+
+            // Fungsi untuk format mata uang Rupiah
+            function formatRupiah(angka) {
+                return 'Rp ' + parseFloat(angka).toLocaleString('id-ID');
+            }
+
+            $('#select-permintaan').change(function() {
                 const permintaanId = $(this).val();
 
                 if (!permintaanId) {
-                    // Reset form jika tidak ada permintaan yang dipilih
-                    resetForm();
+                    $('#items-container').empty();
+                    $('#grand-total').text(formatRupiah('0'));
                     return;
                 }
 
-                // Ambil data dari atribut data-* pada option yang dipilih
-                const tanggal = $(this).find('option:selected').data('tanggal');
-                const user = $(this).find('option:selected').data('user');
-
-                // Isi form
-                $('#tanggal-permintaan').val(tanggal);
-                $('#user-permintaan').val(user);
-
                 // AJAX untuk mendapatkan detail permintaan
                 $.ajax({
-                    url: '/api/permintaan/' + permintaanId,
-                    method: 'GET',
-                    success: function (response) {
-                        selectedPermintaan = response.data;
-                        loadItems(selectedPermintaan.items);
+                    url: '/penerimaan/getListItembyId',
+                    data: {
+                        id: permintaanId
                     },
-                    error: function (xhr) {
+                    method: 'GET',
+                    success: function(response) {
+                        selectedPermintaan = response.data;
+
+                        // Kosongkan container items terlebih dahulu
+                        $('#items-container').empty();
+
+                        // Hitung grand total
+                        let grandTotal = 0;
+
+                        // Loop melalui setiap item dan tambahkan ke tabel
+                        response.data.items.forEach(item => {
+                            const totalHarga = parseFloat(item.total_harga);
+                            grandTotal += totalHarga;
+
+                            const row = `
+                            <tr>
+                                <td>
+                                    <input type="hidden" name="items[${item.id}][kode_sparepart]" value="${item.kode_sparepart}">
+                                    ${item.kode_sparepart}
+                                </td>
+                                <td>
+                                    <input type="hidden" name="items[${item.id}][jenis_kendaraan]" value="${item.jenis_kendaraan}">
+                                    ${item.jenis_kendaraan}
+                                </td>
+                                <td>
+                                    <input type="hidden" name="items[${item.id}][nama_sparepart]" value="${item.nama_sparepart}">
+                                    ${item.nama_sparepart}
+                                </td>
+                                <td class="text-center">
+                                    <input type="hidden" name="items[${item.id}][qty]" value="${item.qty}">
+                                    ${item.qty}
+                                </td>
+                                <td class="text-center">
+                                    <input type="number" name="items[${item.id}][qty_diterima]" class="form-control qty-diterima"
+                                        data-item-kodeSparepat="${item.kode_sparepart}"
+                                        data-harga="${item.harga}"
+                                        data-max-qty="${item.qty}"
+                                        max="${item.qty}"
+                                        min="0"
+                                        value="0">
+                                    <input type="hidden" name="items[${item.id}][id]" value="${item.id}">
+                                    <input type="hidden" name="items[${item.id}][harga]" value="${item.harga}">
+                                </td>
+                                <td class="text-right">
+                                    <input type="hidden" name="items[${item.id}][harga_display]" value="${item.harga}">
+                                    ${formatRupiah(item.harga)}
+                                </td>
+                                <td class="text-right item-total">
+                                    <input type="hidden" name="items[${item.id}][total_harga]" value="${item.total_harga}">
+                                    ${formatRupiah(item.total_harga)}
+                                </td>
+                            </tr>
+                        `;
+
+                            $('#items-container').append(row);
+                        });
+
+                        // Update grand total
+                        $('#grand-total').text(formatRupiah(grandTotal.toString()));
+
+                        // Tambahkan event listener untuk input qty diterima
+                        $(document).on('input', '.qty-diterima', function() {
+                            const qtyDiterima = parseInt($(this).val()) || 0;
+                            const maxQty = parseInt($(this).attr('max'));
+                            const harga = parseFloat($(this).data('harga'));
+
+                            // Validasi tidak melebihi qty permintaan
+                            if (qtyDiterima > maxQty) {
+                                $(this).val(maxQty);
+                                return;
+                            }
+
+                            const total = qtyDiterima * harga;
+
+                            // Update total per item
+                            $(this).closest('tr').find('.item-total').text(formatRupiah(
+                                total.toString()));
+
+                            // Hitung ulang grand total
+                            recalculateGrandTotal();
+                        });
+                    },
+                    error: function(xhr) {
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal',
@@ -180,131 +269,16 @@
                 });
             });
 
-            // Fungsi untuk memuat item permintaan ke tabel
-            function loadItems(items) {
-                $('#items-container').empty();
-                let grandTotal = 0;
-
-                items.forEach((item, index) => {
-                    const total = item.qty * item.harga;
-                    grandTotal += total;
-
-                    const row = `
-                            <tr class="item-row" data-id="${item.id}">
-                                <td>
-                                    <input type="text" class="form-control" 
-                                        name="items[${index}][kode_sparepart]" 
-                                        value="${item.kode_sparepart}" readonly>
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control text-center" 
-                                        name="items[${index}][qty]" 
-                                        value="${item.qty}" min="1" readonly>
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control text-center" 
-                                        name="items[${index}][permintaan]" 
-                                        value="${item.qty}" min="0" readonly>
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control text-center penerimaan-input" 
-                                        name="items[${index}][penerimaan]" 
-                                        value="${item.qty}" min="0" max="${item.qty}" required>
-                                </td>
-                                <td>
-                                    <input type="number" class="form-control text-right" 
-                                        name="items[${index}][harga]" 
-                                        value="${item.harga}" min="0" readonly>
-                                </td>
-                                <td>
-                                    <input type="text" class="form-control text-right item-total" 
-                                        value="${formatRupiah(total)}" readonly>
-                                </td>
-                                <td class="text-center">
-                                    <button type="button" class="btn-remove">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                        `;
-
-                    $('#items-container').append(row);
-                });
-
-                // Update grand total
-                $('#grand-total').text(formatRupiah(grandTotal));
-
-                // Hitung ulang total saat penerimaan diubah
-                $('.penerimaan-input').on('input', function () {
-                    calculateTotals();
-                });
-            }
-
-            // Fungsi untuk reset form
-            function resetForm() {
-                $('#tanggal-permintaan').val('');
-                $('#user-permintaan').val('');
-                $('#items-container').empty();
-                $('#grand-total').text('0');
-                selectedPermintaan = null;
-            }
-
-            // Fungsi format rupiah
-            function formatRupiah(angka) {
-                return 'Rp ' + angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-            }
-
-            // Fungsi hitung total
-            function calculateTotals() {
-                let grandTotal = 0;
-
-                $('.item-row').each(function () {
-                    const penerimaan = parseInt($(this).find('.penerimaan-input').val()) || 0;
-                    const harga = parseInt($(this).find('input[name*="[harga]"]').val()) || 0;
-                    const total = penerimaan * harga;
-
-                    $(this).find('.item-total').val(formatRupiah(total));
-                    grandTotal += total;
-                });
-
-                $('#grand-total').text(formatRupiah(grandTotal));
-            }
-
-            // Event untuk tombol hapus item
-            $(document).on('click', '.btn-remove', function () {
-                $(this).closest('.item-row').remove();
-                calculateTotals();
-            });
-
-            // Event untuk tombol tambah item
-            $('#add-item-button').click(function () {
-                if (!selectedPermintaan) {
-                    Swal.fire({
-                        icon: 'warning',
-                        title: 'Peringatan',
-                        text: 'Silakan pilih permintaan terlebih dahulu'
-                    });
-                    return;
-                }
-
-                // Tampilkan modal atau form untuk menambah item baru
-                // Implementasi ini tergantung kebutuhan Anda
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Info',
-                    text: 'Fitur tambah item manual akan diimplementasikan sesuai kebutuhan'
-                });
-            });
-
             // Submit form
-            $("#formPenerimaan").submit(function (e) {
+            $("#formPenerimaan").submit(function(e) {
                 e.preventDefault();
 
                 // Validasi penerimaan tidak melebihi permintaan
                 let isValid = true;
-                $('.penerimaan-input').each(function () {
+                $('.penerimaan-input').each(function() {
                     const penerimaan = parseInt($(this).val()) || 0;
-                    const permintaan = parseInt($(this).closest('tr').find('input[name*="[permintaan]"]').val()) || 0;
+                    const permintaan = parseInt($(this).closest('tr').find(
+                        'input[name*="[permintaan]"]').val()) || 0;
 
                     if (penerimaan > permintaan) {
                         $(this).addClass('is-invalid');
@@ -337,18 +311,21 @@
                     url: $(this).attr('action'),
                     method: 'POST',
                     data: $(this).serialize(),
-                    success: function (response) {
+                    success: function(response) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
-                            text: response.message || 'Data penerimaan berhasil disimpan',
+                            text: response.message ||
+                                'Data penerimaan berhasil disimpan',
                             timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            window.location.href = response.redirect || '/penerimaan';
+                            showConfirmButton: false,
+                            willClose: () => {
+                                location
+                            .reload(); // Reload halaman setelah SweetAlert ditutup
+                            }
                         });
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         let errorMessage = 'Terjadi kesalahan saat menyimpan data';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;

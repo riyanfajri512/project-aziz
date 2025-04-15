@@ -42,10 +42,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan.index');
     Route::get('/penerimaan/tambah', [PenerimaanController::class, 'tambah'])->name('penerimaan.tambahan');
     Route::post('/penerimaan/simpan', [PenerimaanController::class, 'store'])->name('penerimaan.simpan');
-    Route::get('/penerimaan/list', [PenerimaanController::class, 'getListPermintaan'])->name('penerimaan.list');
-    Route::get('/penerimaan/{id}', [PenerimaanController::class, 'show'])->name('penerimaan.show');
+    Route::get('/penerimaan/list', [PenerimaanController::class, 'getListPenerimaan'])->name('penerimaan.list');
+    Route::get('/penerimaan/getListItembyId', [PenerimaanController::class, 'getListItembyId'])->name('penerimaan.getListItembyId');
     Route::get('/penerimaan/{id}/export', [PenerimaanController::class, 'exportPdf'])->name('penerimaan.export');
     route::delete('/penerimaan/{id}', [PenerimaanController::class, 'destroy'])->name('penerimaan.destroy');
+    Route::get('/penerimaan/{id}/detail', [PenerimaanController::class, 'showDetail'])->name('penerimaan.detail');
+
 
     // Pendistribusian
     Route::get('/pendistribusian', [PendistibusianController::class, 'index'])->name('pendistribusian');
