@@ -34,6 +34,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/permintaan/{id}/reject', [PermintaanController::class, 'reject'])->name('permintaan.reject');
     Route::get('/permintaan/{id}/export', [PermintaanController::class, 'exportPdf'])->name('permintaan.export');
     Route::delete('/permintaan/{id}', [PermintaanController::class, 'destroy'])->name('permintaan.destroy');
+    Route::put('/permintaan/{id}', [PermintaanController::class, 'update'])->name('permintaan.update');
+  
+
 
     // Penerimaan
     Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan.index');

@@ -172,4 +172,12 @@ class PenerimaanController extends Controller
             ], 500);
         }
     }
+
+    public function edit($id)
+    {
+        $penerimaan = Penerimaan::with(['items'])->findOrFail($id);
+        return view('penerimaan.indexedit', compact('penerimaan'));
+    }
+
+
 }

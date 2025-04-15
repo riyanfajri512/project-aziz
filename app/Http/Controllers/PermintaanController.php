@@ -11,6 +11,7 @@ use App\Models\Supplier;
 use Barryvdh\DomPDF\PDF;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class PermintaanController extends Controller
 {
@@ -31,25 +32,25 @@ class PermintaanController extends Controller
 
         return datatables()->of($permintaan)
             ->addIndexColumn()
-            ->addColumn('tanggal', function($data) {
+            ->addColumn('tanggal', function ($data) {
                 return $data->tanggal_dibuat->format('d/m/Y');
             })
-            ->addColumn('suplier', function($data) {
+            ->addColumn('suplier', function ($data) {
                 return $data->suplier->nama ?? '-';
             })
-            ->addColumn('total_payment', function($data) {
+            ->addColumn('total_payment', function ($data) {
                 return 'Rp ' . number_format($data->total_payment, 0, ',', '.');
             })
-            ->addColumn('total', function($data) {
+            ->addColumn('total', function ($data) {
                 return 'Rp ' . number_format($data->total_payment, 0, ',', '.');
             })
-            ->addColumn('lokasi_nama', function($data) {
+            ->addColumn('lokasi_nama', function ($data) {
                 return $data->lokasi->nama ?? '-';
             })
-            ->addColumn('lokasi_unit', function($data) {
+            ->addColumn('lokasi_unit', function ($data) {
                 return $data->lokasi->unit ?? '-';
             })
-            ->addColumn('status', function($data) {
+            ->addColumn('status', function ($data) {
                 $badge = [
                     'Pending' => 'warning',
                     'Approved' => 'success',
@@ -59,25 +60,25 @@ class PermintaanController extends Controller
                 ];
 
                 $statusName = $data->status->nama ?? 'Pending';
-                return '<span class="badge bg-'.($badge[$statusName] ?? 'secondary').'">'
-                    .strtoupper($statusName).
-                '</span>';
+                return '<span class="badge bg-' . ($badge[$statusName] ?? 'secondary') . '">'
+                    . strtoupper($statusName) .
+                    '</span>';
             })
-            ->addColumn('action', function($data) {
+            ->addColumn('action', function ($data) {
                 $btn = '<div class="btn-group">';
 
                 // View Button
-                $btn .= '<button class="btn btn-sm btn-info view-btn" data-id="'.$data->id.'" data-bs-toggle="modal" data-bs-target="#detailModal" title="View">
+                $btn .= '<button class="btn btn-sm btn-info view-btn" data-id="' . $data->id . '" data-bs-toggle="modal" data-bs-target="#detailModal" title="View">
                             <i class="fas fa-eye"></i>
                          </button>';
 
                 // Approve & Reject Buttons (only for pending status)
-                if(($data->status->nama ?? 'Pending') == 'Pending') {
-                    $btn .= '<button class="btn btn-sm btn-success approve-btn" data-id="'.$data->id.'" title="Approve">
+                if (($data->status->nama ?? 'Pending') == 'Pending') {
+                    $btn .= '<button class="btn btn-sm btn-success approve-btn" data-id="' . $data->id . '" title="Approve">
                                 <i class="fas fa-check"></i>
                              </button>';
                     $btn .= '<button class="btn btn-sm btn-danger reject-btn"
-                             data-id="'.$data->id.'"
+                             data-id="' . $data->id . '"
                              data-bs-toggle="modal"
                              data-bs-target="#rejectModal"
                              title="Reject">
@@ -85,10 +86,10 @@ class PermintaanController extends Controller
                              </button>';
                 }
                 // Show Rejection Reason Button (if status is Rejected)
-                elseif(($data->status->nama ?? '') == 'Rejected') {
+                elseif (($data->status->nama ?? '') == 'Rejected') {
                     $btn .= '<button class="btn btn-sm btn-warning show-reason-btn"
-                             data-id="'.$data->id.'"
-                             data-reason="'.htmlspecialchars($data->alasan_reject ?? 'No reason provided').'"
+                             data-id="' . $data->id . '"
+                             data-reason="' . htmlspecialchars($data->alasan_reject ?? 'No reason provided') . '"
                              data-bs-toggle="modal"
                              data-bs-target="#showReasonModal"
                              title="View Rejection Reason">
@@ -97,7 +98,7 @@ class PermintaanController extends Controller
                 }
 
                 // Export Button
-                $btn .= '<a href="'.route('permintaan.export', $data->id).'" class="btn btn-sm btn-secondary" target="_blank" title="Export PDF">
+                $btn .= '<a href="' . route('permintaan.export', $data->id) . '" class="btn btn-sm btn-secondary" target="_blank" title="Export PDF">
                             <i class="fas fa-file-pdf"></i>
                          </a>';
 
@@ -111,7 +112,7 @@ class PermintaanController extends Controller
     public function show($id)
     {
         $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi', 'status'])
-                      ->findOrFail($id);
+            ->findOrFail($id);
 
         if (!$permintaan->status) {
             $permintaan->setRelation('status', Status::find(1));
@@ -129,7 +130,7 @@ class PermintaanController extends Controller
 
         // Generate kode pemesanan
         $lastPermintaan = Permintaan::orderBy('id', 'desc')->first();
-        $nextNumber = $lastPermintaan ? (int)explode('/', $lastPermintaan->kode_pemesanan)[0] + 1 : 1;
+        $nextNumber = $lastPermintaan ? (int) explode('/', $lastPermintaan->kode_pemesanan)[0] + 1 : 1;
         $kodePemesanan = sprintf('%04d', $nextNumber) . '/voum-1';
 
         return view('permintaan.tambahperminntaan', [
@@ -176,7 +177,7 @@ class PermintaanController extends Controller
             }
 
             // Hitung total payment
-            $totalPayment = array_reduce($items, function($carry, $item) {
+            $totalPayment = array_reduce($items, function ($carry, $item) {
                 return $carry + (float) str_replace('.', '', $item['total_harga']);
             }, 0);
 
@@ -290,10 +291,10 @@ class PermintaanController extends Controller
     public function exportPdf($id, PDF $pdf)
     {
         $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi', 'status'])
-        ->findOrFail($id);
+            ->findOrFail($id);
 
         if (!$permintaan->status) {
-        $permintaan->setRelation('status', Status::find(1));
+            $permintaan->setRelation('status', Status::find(1));
         }
 
         $pdf = $pdf->loadView('exportPDF.penerimaanPdf', compact('permintaan'))->setPaper('A4', 'portrait');
@@ -333,6 +334,111 @@ class PermintaanController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Gagal menghapus permintaan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function edit($id)
+    {
+        $permintaan = Permintaan::with(['user', 'suplier', 'items', 'lokasi', 'status'])
+            ->findOrFail($id);
+
+        $lokasiList = Lokasi::all();
+        $jenisList = JenisKendaraan::all();
+        $suplierList = Supplier::all();
+        $spareparts = Sp::all();
+
+        return view('permintaan.indexedit', [
+            'permintaan' => $permintaan,
+            'lokasiList' => $lokasiList,
+            'jenisList' => $jenisList,
+            'suplierList' => $suplierList,
+            'spareparts' => $spareparts
+        ]);
+    }
+    // Update data permintaan
+    public function update(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'kode_pemesanan' => 'required',
+            'unit' => 'required',
+            'lokasi_id' => 'required',
+            'tanggal_dibuat' => 'required|date',
+            'supplier_id' => 'required',
+            'deskripsi' => 'nullable',
+            'file' => 'nullable|file|mimes:pdf,jpg,png|max:2048',
+        ]);
+    
+        try {
+            DB::beginTransaction();
+    
+            // Handle file upload
+            if ($request->hasFile('file')) {
+                // Hapus file lama jika ada
+                $permintaan = Permintaan::findOrFail($id);
+                if ($permintaan->file_path) {
+                    Storage::delete('public/' . $permintaan->file_path);
+                }
+    
+                $filePath = $request->file('file')->store('public/permintaan_files');
+                $validated['file_path'] = str_replace('public/', '', $filePath);
+            }
+    
+            // Proses items
+            $items = $request->has('items') ? json_decode($request->items, true) : [];
+    
+            // Validasi items
+            if (empty($items)) {
+                throw new \Exception('Minimal 1 item sparepart harus dimasukkan');
+            }
+    
+            // Hitung total payment
+            $totalPayment = array_reduce($items, function ($carry, $item) {
+                $harga = is_string($item['harga']) ? str_replace(['.', ','], ['', '.'], $item['harga']) : $item['harga'];
+                $qty = $item['qty'];
+                return $carry + ($harga * $qty);
+            }, 0);
+    
+            // Update data permintaan
+            $permintaan = Permintaan::findOrFail($id);
+            $permintaan->update(array_merge($validated, [
+                'user_id' => auth()->id(),
+                'unit_pembuat' => auth()->user()->name,
+                'total_payment' => $totalPayment,
+            ]));
+    
+            // Hapus item lama dan simpan yang baru
+            $permintaan->items()->delete();
+    
+            foreach ($items as $item) {
+                // Bersihkan format angka
+                $harga = is_string($item['harga']) ? str_replace(['.', ','], ['', '.'], $item['harga']) : $item['harga'];
+                $qty = (int) $item['qty'];
+                $totalHarga = $harga * $qty;
+    
+                // Simpan item baru
+                $permintaan->items()->create([
+                    'kode_sparepart' => $item['kode_sparepart'],
+                    'jenis_kendaraan' => $item['jenis_kendaraan'],
+                    'nama_sparepart' => $item['nama_sparepart'],
+                    'qty' => $qty,
+                    'harga' => $harga,
+                    'total_harga' => $totalHarga,
+                ]);
+            }
+    
+            DB::commit();
+    
+            return response()->json([
+                'success' => true,
+                'message' => 'Permintaan berhasil diperbarui',
+            ]);
+    
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui permintaan: ' . $e->getMessage(),
             ], 500);
         }
     }
