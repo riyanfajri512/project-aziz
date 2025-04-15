@@ -53,8 +53,10 @@
                         </div>
 
                         <div class="card-body">
-                            <form id="formPermintaan">
-                                @method('PUT')
+                        <form id="formPermintaan" action="{{ route('permintaan.update', $permintaan->id) 
+                        }}" method="POST" enctype="multipart/form-data">
+                            @csrf
+                            @method('PUT')
                                 <input type="hidden" name="id" value="{{ $permintaan->id }}">
                                 <div class="row">
                                     <div class="col-md-6">
@@ -107,8 +109,8 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Tanggal Dibuat</label>
-                                            <input type="date" class="form-control" name="tanggal_dibuat" 
-                                                   value="{{ $permintaan->tanggal_dibuat->format('Y-m-d') }}">
+                                            <input type="date" class="form-control" name="tanggal"
+                                             value="{{ $permintaan->tanggal_dibuat->format('Y-m-d') }}" required>
                                             <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
 
@@ -190,30 +192,30 @@
                                             <tbody id="items-container">
                                                 <!-- Isi dengan item yang sudah ada -->
                                                 @foreach($permintaan->items as $item)
-                                                <tr data-id="{{ $item->sparepart_id ?? '' }}">
+                                                <tr data-item-id="{{ $item->id }}">
                                                     <td>
-                                                        <input type="text" class="form-control kode" name="kode_sparepart[]" 
-                                                               value="{{ $item->kode_sparepart }}" readonly>
+                                                        <input type="text" class="form-control" name="kode_sparepart[]" 
+                                                            value="{{ $item->kode_sparepart }}" readonly>
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control jenis" name="jenis_kendaraan[]" 
-                                                               value="{{ $item->jenis_kendaraan }}" readonly>
+                                                        <input type="text" class="form-control" name="jenis_kendaraan[]" 
+                                                            value="{{ $item->jenis_kendaraan }}" readonly>
                                                     </td>
                                                     <td>
-                                                        <input type="text" class="form-control nama" name="nama_sparepart[]" 
-                                                               value="{{ $item->nama_sparepart }}" readonly>
+                                                        <input type="text" class="form-control" name="nama_sparepart[]" 
+                                                            value="{{ $item->nama_sparepart }}" readonly>
                                                     </td>
                                                     <td class="text-center">
                                                         <input type="number" class="form-control qty" name="qty[]" 
-                                                               min="1" value="{{ $item->qty }}">
+                                                            value="{{ $item->qty }}" min="1" required>
                                                     </td>
                                                     <td class="text-right">
-                                                        <input type="number" class="form-control harga text-right" 
-                                                               name="harga[]" value="{{ $item->harga }}">
+                                                        <input type="number" class="form-control harga" name="harga[]" 
+                                                            value="{{ $item->harga }}" readonly>
                                                     </td>
                                                     <td class="text-right">
-                                                        <input type="text" class="form-control total text-right" 
-                                                               name="total_harga[]" value="{{ $item->total_harga }}" readonly>
+                                                        <input type="text" class="form-control total" name="total_harga[]" 
+                                                            value="{{ $item->total_harga }}" readonly>
                                                     </td>
                                                     <td class="text-center">
                                                         <button type="button" class="btn btn-danger btn-sm remove-item">
@@ -263,7 +265,7 @@
                                 </div>
 
                                 <div class="d-flex justify-content-end">
-                                    <button type="submit" class="btn btn-primary">Update</button>
+                                    <button type="button" id="submit-button" class="btn btn-primary">Update</button>
                                     <a href="{{ route('permintaan.index') }}" class="btn btn-secondary ms-2">Batal</a>
                                 </div>
                             </form>
@@ -279,132 +281,133 @@
 
 @section('script')
     <script>
-        $('.select2-sparepart').select2({
-            placeholder: "Cari sparepart...",
-            allowClear: true
-        });
-
-        // Variabel untuk menyimpan sparepart yang sudah dipilih
-        let selectedSpareparts = @json($permintaan->items->pluck('sparepart_id')->filter()->toArray());
-        let sparepartHistory = @json($spareparts->toArray());
-
-        // Fungsi untuk menambahkan sparepart ke tabel
-        $('#btn-add-sparepart').click(function() {
-            const selectElement = $('#sparepart-search');
-            const selectedOption = selectElement.find('option:selected');
-            const sparepartId = selectedOption.val();
-
-            if (!sparepartId) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Search kosong',
-                    text: 'Silahkan pilih sparepart terlebih dahulu',
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
-
-            if (selectedSpareparts.includes(sparepartId)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Duplikat sparepart',
-                    text: 'Sparepart ini sudah ditambahkan!',
-                    confirmButtonText: 'OK'
-                });
-                return;
-            }
-
-            selectedSpareparts.push(sparepartId);
-
-            const kode = selectedOption.data('kode');
-            const nama = selectedOption.data('nama');
-            const jenis = selectedOption.data('jenis');
-            const harga = selectedOption.data('harga');
-
-            const newRow = `
-            <tr data-id="${sparepartId}">
-                <td>
-                    <input type="text" class="form-control kode" name="kode_sparepart[]" value="${kode}"readonly>
-                </td>
-                <td>
-                    <input type="text" class="form-control jenis" name="jenis_kendaraan[]" value="${jenis}" readonly>
-                </td>
-                <td>
-                    <input type="text" class="form-control nama" name="nama_sparepart[]" value="${nama}" readonly>
-                </td>
-                <td class="text-center">
-                    <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
-                </td>
-                <td class="text-right">
-                    <input type="number" class="form-control harga text-right" name="harga[]" value="${harga}">
-                </td>
-                <td class="text-right">
-                    <input type="text" class="form-control total text-right" name="total_harga[]" value="${harga}" readonly>
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-danger btn-sm remove-item">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-
-            $('#items-container').append(newRow);
-            selectElement.val('').trigger('change');
-            updateTotal();
-        });
-
-        function generateRow() {
-            return `
-            <tr>
-                <td>
-                    <input type="text" class="form-control kode" name="kode_sparepart[]" list="sparepart-list">
-                </td>
-                <td>
-                    <select class="form-control jenis" name="jenis_kendaraan[]">
-                        <option value="">Pilih</option>
-                        @foreach ($jenisList as $jenis)
-                            <option value="{{ $jenis->nama }}">{{ $jenis->nama }}</option>
-                        @endforeach
-                    </select>
-                </td>
-                <td>
-                    <input type="text" class="form-control nama" name="nama_sparepart[]">
-                </td>
-                <td class="text-center">
-                    <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
-                </td>
-                <td class="text-right">
-                    <input type="number" class="form-control harga text-right" name="harga[]" value="0">
-                </td>
-                <td class="text-right">
-                    <input type="text" class="form-control total text-right" name="total_harga[]" value="0" readonly>
-                </td>
-                <td class="text-center">
-                    <button type="button" class="btn btn-danger btn-sm remove-item">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-        }
-
-        // Fungsi untuk update total
-        function updateTotal() {
-            let total = 0;
-            $('#items-container tr').each(function() {
-                let qty = parseInt($(this).find('.qty').val()) || 0;
-                let harga = parseInt($(this).find('.harga').val()) || 0;
-                let rowTotal = qty * harga;
-                $(this).find('.total').val(rowTotal.toLocaleString('id-ID'));
-                total += rowTotal;
-            });
-            $('#total_payment').val(total.toLocaleString('id-ID'));
-        }
-
         $(document).ready(function() {
+            // Inisialisasi Select2
+            $('.select2-sparepart').select2({
+                placeholder: "Cari sparepart...",
+                allowClear: true
+            });
+
+            // Variabel untuk menyimpan sparepart yang sudah dipilih
+            let selectedSpareparts = @json($permintaan->items->pluck('sparepart_id')->filter()->toArray());
+            let sparepartHistory = @json($spareparts->toArray());
+
             // Inisialisasi total saat pertama kali load
             updateTotal();
+
+            // Fungsi untuk menambahkan sparepart ke tabel
+            $('#btn-add-sparepart').click(function() {
+                const selectElement = $('#sparepart-search');
+                const selectedOption = selectElement.find('option:selected');
+                const sparepartId = selectedOption.val();
+
+                if (!sparepartId) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Search kosong',
+                        text: 'Silahkan pilih sparepart terlebih dahulu',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                if (selectedSpareparts.includes(sparepartId)) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Duplikat sparepart',
+                        text: 'Sparepart ini sudah ditambahkan!',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+
+                selectedSpareparts.push(sparepartId);
+
+                const kode = selectedOption.data('kode');
+                const nama = selectedOption.data('nama');
+                const jenis = selectedOption.data('jenis');
+                const harga = selectedOption.data('harga');
+
+                const newRow = `
+                <tr data-id="${sparepartId}">
+                    <td>
+                        <input type="text" class="form-control kode" name="kode_sparepart[]" value="${kode}"readonly>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control jenis" name="jenis_kendaraan[]" value="${jenis}" readonly>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control nama" name="nama_sparepart[]" value="${nama}" readonly>
+                    </td>
+                    <td class="text-center">
+                        <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
+                    </td>
+                    <td class="text-right">
+                        <input type="number" class="form-control harga text-right" name="harga[]" value="${harga}">
+                    </td>
+                    <td class="text-right">
+                        <input type="text" class="form-control total text-right" name="total_harga[]" value="${harga}" readonly>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-sm remove-item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+
+                $('#items-container').append(newRow);
+                selectElement.val('').trigger('change');
+                updateTotal();
+            });
+
+            function generateRow() {
+                return `
+                <tr>
+                    <td>
+                        <input type="text" class="form-control kode" name="kode_sparepart[]" list="sparepart-list">
+                    </td>
+                    <td>
+                        <select class="form-control jenis" name="jenis_kendaraan[]">
+                            <option value="">Pilih</option>
+                            @foreach ($jenisList as $jenis)
+                                <option value="{{ $jenis->nama }}">{{ $jenis->nama }}</option>
+                            @endforeach
+                        </select>
+                    </td>
+                    <td>
+                        <input type="text" class="form-control nama" name="nama_sparepart[]">
+                    </td>
+                    <td class="text-center">
+                        <input type="number" class="form-control qty" name="qty[]" min="1" value="1">
+                    </td>
+                    <td class="text-right">
+                        <input type="number" class="form-control harga text-right" name="harga[]" value="0">
+                    </td>
+                    <td class="text-right">
+                        <input type="text" class="form-control total text-right" name="total_harga[]" value="0" readonly>
+                    </td>
+                    <td class="text-center">
+                        <button type="button" class="btn btn-danger btn-sm remove-item">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+            }
+
+            // Fungsi untuk update total
+            function updateTotal() {
+                let total = 0;
+                $('#items-container tr').each(function() {
+                    let qty = parseInt($(this).find('.qty').val()) || 0;
+                    let harga = parseInt($(this).find('.harga').val()) || 0;
+                    let rowTotal = qty * harga;
+                    $(this).find('.total').val(rowTotal.toLocaleString('id-ID'));
+                    total += rowTotal;
+                });
+                $('#total_payment').val(total.toLocaleString('id-ID'));
+            }
 
             // Preview PDF sebelum upload
             $('input[name="file"]').change(function(e) {
@@ -508,70 +511,108 @@
                 }
             });
 
-            $('#formPermintaan').on('submit', function(e) {
+            // Submit button event handler - FIXED
+            $('#submit-button').on('click', function(e) {
                 e.preventDefault();
+                submitForm();
+            });
 
-                // Tampilkan loading spinner
+            // Replace the submitForm function with this updated version
+            function submitForm() {
+                // Show loading state
                 Swal.fire({
-                    title: 'Menyimpan Perubahan',
-                    html: 'Sedang memproses permintaan...',
+                    title: 'Menyimpan Data',
+                    html: 'Sedang memproses...',
                     allowOutsideClick: false,
-                    didOpen: () => {
-                        Swal.showLoading();
-                    }
+                    didOpen: () => Swal.showLoading()
                 });
 
-                // Format data items
+                // Get the form
+                const form = $('#formPermintaan')[0];
+                const formData = new FormData(form);
+                
+                // Ensure tanggal is included
+                const tanggal = $('input[name="tanggal"]').val();
+                if (!tanggal) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: 'Tanggal dibuat wajib diisi',
+                        confirmButtonText: 'OK'
+                    });
+                    return;
+                }
+                formData.append('tanggal_dibuat', tanggal);
+                
+                // Collect items data
                 let items = [];
                 $('#items-container tr').each(function() {
+                    let itemId = $(this).data('item-id') || null;
+                    
                     items.push({
+                        id: itemId,
                         kode_sparepart: $(this).find('[name="kode_sparepart[]"]').val(),
                         jenis_kendaraan: $(this).find('[name="jenis_kendaraan[]"]').val(),
                         nama_sparepart: $(this).find('[name="nama_sparepart[]"]').val(),
                         qty: $(this).find('[name="qty[]"]').val(),
                         harga: $(this).find('[name="harga[]"]').val(),
-                        total_harga: $(this).find('[name="total_harga[]"]').val()
+                        total_harga: $(this).find('[name="total_harga[]"]').val().replace(/[.,]/g, '')
                     });
                 });
 
-                // Buat FormData
-                let formData = new FormData(this);
+                // Add items to formData
                 formData.append('items', JSON.stringify(items));
-                formData.append('_method', 'PUT');
-
-                // Kirim ke backend
+                
+                // Get the CSRF token
+                const token = $('meta[name="csrf-token"]').attr('content');
+                
+                // Send AJAX request
                 $.ajax({
-                    url: '/permintaan/' + $('input[name="id"]').val(),
+                    url: $('#formPermintaan').attr('action'),
                     type: 'POST',
                     data: formData,
                     processData: false,
                     contentType: false,
                     headers: {
-                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                        'X-CSRF-TOKEN': token,
+                        'X-HTTP-Method-Override': 'PUT'
                     },
                     success: function(response) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
-                            text: 'Permintaan berhasil diperbarui',
+                            text: response.message || 'Data berhasil diupdate',
                             confirmButtonText: 'OK'
                         }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = '/permintaan';
+                            if (result.isConfirmed && response.redirect) {
+                                window.location.href = response.redirect;
                             }
                         });
                     },
                     error: function(xhr) {
-                        let errorMessage = xhr.responseJSON?.message || 'Terjadi kesalahan';
+                        let errorMessage = 'Terjadi kesalahan';
+                        
+                        if (xhr.responseJSON) {
+                            if (xhr.responseJSON.message) {
+                                errorMessage = xhr.responseJSON.message;
+                            }
+                            
+                            if (xhr.responseJSON.errors) {
+                                errorMessage = Object.values(xhr.responseJSON.errors)
+                                    .flat()
+                                    .join('<br>');
+                            }
+                        }
+                        
                         Swal.fire({
                             icon: 'error',
                             title: 'Gagal!',
-                            text: errorMessage,
+                            html: errorMessage,
                             confirmButtonText: 'Tutup'
                         });
                     }
                 });
-            });
+            }
         });
     </script>
 @endsection
