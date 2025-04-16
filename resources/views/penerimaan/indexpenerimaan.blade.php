@@ -101,6 +101,9 @@
 
         $(document).on('click', '.view-btn', function () {
             const id = $(this).data('id');
+
+            console.log(id, "ini id button yang di klik");
+
             const modal = $('#detailModal');
 
             $('#detailContent').html(`
