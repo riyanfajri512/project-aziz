@@ -160,7 +160,7 @@ class PenerimaanController extends Controller
         // Validasi input
         $validated = $request->validate([
             'tanggal' => 'required|date',
-            'permintaan_id' => 'required|exists:permintaan,id',
+            'permintaan_id' => 'required|exists:tbl_permintaan,id',
             'items' => 'required|array',
             'items.*.kode_sparepart' => 'required|string',
             'items.*.jenis_kendaraan' => 'required|string',
