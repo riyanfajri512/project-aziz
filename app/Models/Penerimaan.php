@@ -38,6 +38,8 @@ class Penerimaan extends Model
     // Relasi yang diperbaiki:
     public function items()
     {
-        return $this->hasMany(PenerimaanItem::class, 'penerimaan_id', 'permintaan_id');
+        return $this->hasMany(PenerimaanItem::class, 'penerimaan_id', 'id');
     }
+
+
 }

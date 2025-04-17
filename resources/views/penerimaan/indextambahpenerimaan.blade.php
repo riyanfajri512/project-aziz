@@ -127,7 +127,7 @@
 
                                 <div class="d-flex justify-content-end mt-3">
                                     <button type="submit" class="btn btn-primary">Simpan</button>
-                                    <button type="reset" class="btn btn-secondary ms-2">Batal</button>
+                                    <a href="{{ route('penerimaan.index') }}" class="btn btn-secondary ms-2">Batal</a>
                                 </div>
                             </form>
                         </div>

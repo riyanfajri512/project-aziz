@@ -197,9 +197,6 @@
                                 </button>
                             </div>
                             <div>
-                                <a href="/penerimaan/${p.id}/export" class="btn btn-primary me-2" target="_blank">
-                                    <i class="fas fa-file-pdf me-1"></i> Export PDF
-                                </a>
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                             </div>
                         `);
