@@ -146,7 +146,7 @@ class PenerimaanController extends Controller
             ->where('status_id', 2) // Status "Diterima"
             ->get();
         $lastPenerimaan = Penerimaan::orderBy('id', 'desc')->first();
-        $nextNumber = $lastPenerimaan ? (int) explode('/', $lastPenerimaan->kode_pemesanan)[0] + 1 : 1;
+        $nextNumber = $lastPenerimaan ? (int) explode('/', $lastPenerimaan->kode_penerimaan)[0] + 1 : 1;
         $kodePemesanan = sprintf('%04d', $nextNumber) . '/voum-2';
         return view('penerimaan.indextambahpenerimaan', [
             'kodePeneriman' => $kodePemesanan,
@@ -157,6 +157,8 @@ class PenerimaanController extends Controller
     // Menyimpan data penerimaan
     public function store(Request $request)
     {
+
+        // dd($request->all());
         // Validasi input
         $validated = $request->validate([
             'tanggal' => 'required|date',
@@ -276,25 +278,25 @@ class PenerimaanController extends Controller
             'items' => 'required|json',
             'file' => 'nullable|file|mimes:pdf|max:2048'
         ]);
-    
+
         try {
             DB::beginTransaction();
-    
+
             // Decode items
             $items = json_decode($validated['items'], true);
-            
+
             if (!is_array($items)) {
                 throw ValidationException::withMessages([
                     'items' => ['Format items tidak valid']
                 ]);
             }
-    
+
             if (count($items) === 0) {
                 throw ValidationException::withMessages([
                     'items' => ['Minimal harus ada 1 item']
                 ]);
             }
-    
+
             // Validasi setiap item
             foreach ($items as $item) {
                 $validator = Validator::make($item, [
@@ -304,12 +306,12 @@ class PenerimaanController extends Controller
                     'qty' => 'required|numeric|min:1',
                     'harga' => 'required|numeric|min:0'
                 ]);
-    
+
                 if ($validator->fails()) {
                     throw new ValidationException($validator);
                 }
             }
-    
+
             // Update permintaan
             $permintaan = Permintaan::findOrFail($id);
             $permintaan->update([
@@ -318,11 +320,11 @@ class PenerimaanController extends Controller
                 'deskripsi' => $validated['deskripsi'],
                 'unit_pembuat' => auth()->user()->name // Sesuaikan dengan kebutuhan
             ]);
-    
+
             // Proses items
             $itemIds = [];
             $totalPayment = 0;
-            
+
             foreach ($items as $item) {
                 $itemData = [
                     'kode_sparepart' => $item['kode_sparepart'],
@@ -332,7 +334,7 @@ class PenerimaanController extends Controller
                     'harga' => $item['harga'],
                     'total_harga' => $item['qty'] * $item['harga']
                 ];
-    
+
                 if (!empty($item['id'])) {
                     // Update existing item
                     $permintaan->items()->where('id', $item['id'])->update($itemData);
@@ -342,36 +344,36 @@ class PenerimaanController extends Controller
                     $newItem = $permintaan->items()->create($itemData);
                     $itemIds[] = $newItem->id;
                 }
-                
+
                 $totalPayment += $itemData['total_harga'];
             }
-    
+
             // Hapus items yang tidak ada dalam request
             $permintaan->items()->whereNotIn('id', $itemIds)->delete();
-    
+
             // Update total payment
             $permintaan->update(['total_payment' => $totalPayment]);
-    
+
             // Handle file upload
             if ($request->hasFile('file')) {
                 // Hapus file lama jika ada
                 if ($permintaan->file_path && Storage::exists($permintaan->file_path)) {
                     Storage::delete($permintaan->file_path);
                 }
-                
+
                 // Simpan file baru
                 $path = $request->file('file')->store('permintaan_files');
                 $permintaan->update(['file_path' => $path]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Permintaan berhasil diperbarui',
                 'redirect' => route('permintaan.index')
             ]);
-    
+
         } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -387,6 +389,6 @@ class PenerimaanController extends Controller
             ], 500);
         }
     }
-        
-                        
+
+
 }
