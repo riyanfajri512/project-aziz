@@ -225,11 +225,12 @@ class PenerimaanController extends Controller
     }
 
     // Mengekspor data penerimaan ke PDF
-    public function exportPdf($id)
+    public function exportPdf($id, PDF $pdf)
     {
-        $penerimaan = Penerimaan::with(['items', 'user'])->findOrFail($id);
-        $pdf = Pdf::loadView('penerimaan.export', compact('penerimaan'));
-        return $pdf->download('penerimaan-' . $penerimaan->kode_penerimaan . '.pdf');
+        $penerimaan = Penerimaan::with(['user', 'permintaan', 'items'])
+                ->findOrFail($id);
+        $pdf = Pdf::loadView('exportPDF.penerimaanPdf', compact('penerimaan'));
+        return $pdf->stream('penerimaan.pdf');
     }
 
     // Menghapus data penerimaan

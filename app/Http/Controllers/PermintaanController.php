@@ -297,7 +297,7 @@ class PermintaanController extends Controller
             $permintaan->setRelation('status', Status::find(1));
         }
 
-        $pdf = $pdf->loadView('exportPDF.penerimaanPdf', compact('permintaan'))->setPaper('A4', 'portrait');
+        $pdf = $pdf->loadView('exportPDF.permintaanPdf', compact('permintaan'))->setPaper('A4', 'portrait');
         return $pdf->stream('permintaan-' . $permintaan->id . '.pdf');
     }
 
