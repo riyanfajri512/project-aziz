@@ -368,10 +368,10 @@ class PermintaanController extends Controller
             'deskripsi' => 'nullable',
             'file' => 'nullable|file|mimes:pdf,jpg,png|max:2048',
         ]);
-    
+
         try {
             DB::beginTransaction();
-    
+
             // Handle file upload
             if ($request->hasFile('file')) {
                 // Hapus file lama jika ada
@@ -379,26 +379,26 @@ class PermintaanController extends Controller
                 if ($permintaan->file_path) {
                     Storage::delete('public/' . $permintaan->file_path);
                 }
-    
+
                 $filePath = $request->file('file')->store('public/permintaan_files');
                 $validated['file_path'] = str_replace('public/', '', $filePath);
             }
-    
+
             // Proses items
             $items = $request->has('items') ? json_decode($request->items, true) : [];
-    
+
             // Validasi items
             if (empty($items)) {
                 throw new \Exception('Minimal 1 item sparepart harus dimasukkan');
             }
-    
+
             // Hitung total payment
             $totalPayment = array_reduce($items, function ($carry, $item) {
                 $harga = is_string($item['harga']) ? str_replace(['.', ','], ['', '.'], $item['harga']) : $item['harga'];
                 $qty = $item['qty'];
                 return $carry + ($harga * $qty);
             }, 0);
-    
+
             // Update data permintaan
             $permintaan = Permintaan::findOrFail($id);
             $permintaan->update(array_merge($validated, [
@@ -406,16 +406,16 @@ class PermintaanController extends Controller
                 'unit_pembuat' => auth()->user()->name,
                 'total_payment' => $totalPayment,
             ]));
-    
+
             // Hapus item lama dan simpan yang baru
             $permintaan->items()->delete();
-    
+
             foreach ($items as $item) {
                 // Bersihkan format angka
                 $harga = is_string($item['harga']) ? str_replace(['.', ','], ['', '.'], $item['harga']) : $item['harga'];
                 $qty = (int) $item['qty'];
                 $totalHarga = $harga * $qty;
-    
+
                 // Simpan item baru
                 $permintaan->items()->create([
                     'kode_sparepart' => $item['kode_sparepart'],
@@ -426,14 +426,14 @@ class PermintaanController extends Controller
                     'total_harga' => $totalHarga,
                 ]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Permintaan berhasil diperbarui',
             ]);
-    
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
