@@ -18,7 +18,8 @@
                                 <input type="date" class="form-control" placeholder="Filter Tanggal">
                             </div>
                             <div>
-                                <a href="{{ route('pendistribusian.tambah') }}" class="btn btn-primary">Tambah Pendistribusian</a>
+                                <a href="{{ route('pendistribusian.tambah') }}" class="btn btn-primary">Tambah
+                                    Pendistribusian</a>
                             </div>
                         </div>
                     </div>

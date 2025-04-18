@@ -21,34 +21,61 @@
                                     <div class="col-md-6">
                                         <div class="mb-3">
                                             <label class="form-label">Nomor Perbaikan</label>
-                                            <input type="text" class="form-control" name="no_perbaikan" 
-                                                   placeholder="Contoh: DO01" required>
+                                            <select class="form-control" name="no_perbaikan" id="select-perbaikan" required>
+                                                <option value="">Pilih Nomor Perbaikan</option>
+                                                <!-- Data akan diisi secara dinamis -->
+                                            </select>
                                         </div>
                                         <div class="mb-3">
-                                            <label class="form-label">User ID</label>
-                                            <input type="text" class="form-control" name="user_id" 
-                                                   placeholder="Contoh: 1001" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Unit ID</label>
-                                            <input type="text" class="form-control" name="unit_id" 
-                                                   placeholder="Contoh: U001" required>
+                                            <label class="form-label">User</label>
+                                            <input type="text" class="form-control" id="user-perbaikan" value="{{ Auth::user()->name }}" readonly>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
                                         <div class="mb-3">
-                                            <label class="form-label">Sparepart Distribusi ID</label>
-                                            <input type="text" class="form-control" name="sparepart_distribusi_id"
-                                                   placeholder="Contoh: SPD001" required>
-                                        </div>
-                                        <div class="mb-3">
-                                            <label class="form-label">Jumlah</label>
-                                            <input type="number" class="form-control" name="jumlah" 
-                                                   min="1" value="1" required>
-                                        </div>
-                                        <div class="mb-3">
                                             <label class="form-label">Tanggal</label>
                                             <input type="date" class="form-control" name="tanggal" required>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Kode Distribusi</label>
+                                            <input type="text" class="form-control" name="kode_distribusi" value="DIST-{{ date('YmdHis') }}" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="table-responsive mt-3">
+                                    <table class="table" id="tabel-sparepart-distribusi">
+                                        <thead class="thead-light">
+                                            <tr>
+                                                <th>Kode Sparepart</th>
+                                                <th>Jenis Kendaraan</th>
+                                                <th>Nama Sparepart</th>
+                                                <th class="text-center">Stok Tersedia</th>
+                                                <th class="text-center">Qty Distribusi</th>
+                                                <th class="text-right">Unit</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="items-container-distribusi">
+                                            <!-- Baris item akan diisi secara dinamis -->
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Unit Tujuan</label>
+                                            <select class="form-control" name="unit_id" required>
+                                                <option value="">Pilih Unit Tujuan</option>
+
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label class="form-label">Deskripsi/Catatan</label>
+                                            <textarea class="form-control" name="deskripsi"></textarea>
+                                            <small class="text-danger d-none">Field ini wajib diisi</small>
                                         </div>
                                     </div>
                                 </div>
@@ -67,59 +94,60 @@
 @endsection
 
 @section('script')
-<script>
-    $(document).ready(function() {
-        // Form submission
-        $("#formPendistribusian").submit(function(e) {
-            e.preventDefault();
-            
-            // Validasi form
-            let isValid = true;
-            $('input[required]').each(function() {
-                if ($(this).val().trim() === '') {
-                    $(this).addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    $(this).removeClass('is-invalid');
+    <script>
+        $(document).ready(function() {
+            // Form submission
+            $("#formPendistribusian").submit(function(e) {
+                e.preventDefault();
+
+                // Validasi form
+                let isValid = true;
+                $('input[required]').each(function() {
+                    if ($(this).val().trim() === '') {
+                        $(this).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Harap isi semua field yang wajib!'
+                    });
+                    return;
                 }
+
+                // Kirim data ke server
+                Swal.fire({
+                    title: 'Menyimpan Data...',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                // Simulasi AJAX request
+                setTimeout(() => {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: 'Data pendistribusian berhasil disimpan',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.href =
+                        '/pendistribusian'; // Redirect ke halaman pendistribusian
+                    });
+                }, 1500);
             });
 
-            if (!isValid) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Oops...',
-                    text: 'Harap isi semua field yang wajib!'
-                });
-                return;
-            }
-
-            // Kirim data ke server
-            Swal.fire({
-                title: 'Menyimpan Data...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
+            // Reset form validation on input
+            $('input').on('input', function() {
+                $(this).removeClass('is-invalid');
             });
-
-            // Simulasi AJAX request
-            setTimeout(() => {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Berhasil!',
-                    text: 'Data pendistribusian berhasil disimpan',
-                    timer: 2000,
-                    showConfirmButton: false
-                }).then(() => {
-                    window.location.href = '/pendistribusian'; // Redirect ke halaman pendistribusian
-                });
-            }, 1500);
         });
-
-        // Reset form validation on input
-        $('input').on('input', function() {
-            $(this).removeClass('is-invalid');
-        });
-    });
-</script>
+    </script>
 @endsection
