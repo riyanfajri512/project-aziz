@@ -9,5 +9,5 @@ class Sp extends Model
 {
     use HasFactory;
     protected $table = 'tbl_sp';
-    protected $fillable = ['kode', 'jenis', 'nama', 'harga'];
+    protected $fillable = ['kode', 'jenis', 'nama', 'harga', 'stok'];
 }

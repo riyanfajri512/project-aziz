@@ -35,8 +35,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/permintaan/{id}/export', [PermintaanController::class, 'exportPdf'])->name('permintaan.export');
     Route::delete('/permintaan/{id}', [PermintaanController::class, 'destroy'])->name('permintaan.destroy');
     Route::put('/permintaan/{id}', [PenerimaanController::class, 'update'])->name('permintaan.update');
-    
-    
+
+
 
     // Penerimaan
     Route::get('/penerimaan', [PenerimaanController::class, 'index'])->name('penerimaan.index');
@@ -54,6 +54,7 @@ Route::middleware(['auth'])->group(function () {
     // Pendistribusian
     Route::get('/pendistribusian', [PendistibusianController::class, 'index'])->name('pendistribusian');
     Route::get('/pendistribusian/tambah', [PendistibusianController::class, 'tambah'])->name('pendistribusian.tambah');
+    Route::post('pendistribusian/store', [PendistibusianController::class, 'store'])->name('pendistribusian.store');
 
     // History
     Route::get('/history' ,[HistoryController::class, 'index'])->name('history');
