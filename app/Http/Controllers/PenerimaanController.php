@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Penerimaan;
 use App\Models\PenerimaanItem;
 use App\Models\Permintaan;
+use App\Models\Sp;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
@@ -157,38 +158,50 @@ class PenerimaanController extends Controller
     // Menyimpan data penerimaan
     public function store(Request $request)
     {
-        // Validasi input
+        // Validasi input utama
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'permintaan_id' => 'required|exists:tbl_permintaan,id',
+            'kode_penerimaan' => 'required|string',
             'items' => 'required|array',
             'items.*.kode_sparepart' => 'required|string',
             'items.*.jenis_kendaraan' => 'required|string',
             'items.*.nama_sparepart' => 'required|string',
             'items.*.qty' => 'required|numeric|min:0',
-            'items.*.qty_diterima' => 'required|numeric|min:0',
+            'items.*.qty_diterima' => 'required|numeric|min:0|lte:items.*.qty',
             'items.*.harga' => 'required|numeric|min:0',
+            'deskripsi' => 'nullable|string'
         ]);
 
         DB::beginTransaction();
         try {
-            // 1. Update status Permintaan terlebih dahulu
+            // 1. Update status Permintaan
             $permintaan = Permintaan::findOrFail($validated['permintaan_id']);
             $permintaan->update(['status_id' => 4]);
 
-            // 2. Create the main Penerimaan record
+            // 2. Create Penerimaan
             $penerimaan = Penerimaan::create([
-                'kode_penerimaan' => $request->kode_penerimaan,
+                'kode_penerimaan' => $validated['kode_penerimaan'],
                 'permintaan_id' => $validated['permintaan_id'],
                 'user_id' => auth()->id(),
                 'tanggal' => $validated['tanggal'],
                 'grand_total' => $this->calculateGrandTotal($validated['items']),
+                'deskripsi' => $request->deskripsi ?? null
             ]);
 
-            // 3. Create PenerimaanItem records
+            // 3. Process Items
             foreach ($validated['items'] as $itemData) {
+                // Cari sparepart berdasarkan kode
+                $sparepart = Sp::where('kode', $itemData['kode_sparepart'])->first();
+
+                if (!$sparepart) {
+                    throw new \Exception("Sparepart dengan kode {$itemData['kode_sparepart']} tidak ditemukan");
+                }
+
+                // Create PenerimaanItem
                 PenerimaanItem::create([
                     'penerimaan_id' => $penerimaan->id,
+                    'sparepart_id' => $sparepart->id,
                     'kode_sparepart' => $itemData['kode_sparepart'],
                     'jenis_kendaraan' => $itemData['jenis_kendaraan'],
                     'nama_sparepart' => $itemData['nama_sparepart'],
@@ -196,23 +209,36 @@ class PenerimaanController extends Controller
                     'qty_diterima' => $itemData['qty_diterima'],
                     'harga' => $itemData['harga'],
                     'total_harga' => $itemData['qty_diterima'] * $itemData['harga'],
-                    'belance' => $itemData['qty_diterima'],
                 ]);
+
+                // Update stok di tbl_sp
+                DB::table('tbl_sp')
+                    ->where('id', $sparepart->id)
+                    ->increment('stok', $itemData['qty_diterima']);
+
+                // Catat history stok
+                // StokHistory::create([
+                //     'sparepart_id' => $sparepart->id,
+                //     'perubahan' => $itemData['qty_diterima'],
+                //     'referensi' => 'penerimaan',
+                //     'referensi_id' => $penerimaan->id,
+                //     'keterangan' => 'Penerimaan barang dari permintaan ' . $permintaan->kode_pemesanan
+                // ]);
             }
 
             DB::commit();
             return response()->json([
                 'success' => true,
-                'data' => [
-                    'penerimaan' => $penerimaan,
-                    'permintaan' => $permintaan
-                ]
+                'data' => $penerimaan,
+                'message' => 'Penerimaan berhasil disimpan'
             ]);
+
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Gagal menyimpan data: ' . $e->getMessage()
+                'message' => 'Gagal menyimpan penerimaan: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString() // Lebih detail untuk debugging
             ], 500);
         }
     }
@@ -269,7 +295,7 @@ class PenerimaanController extends Controller
     }
     public function update(Request $request, $id)
     {
-        // Validasi input
+        // Validasi input utama
         $validated = $request->validate([
             'tanggal_dibuat' => 'required|date',
             'supplier_id' => 'required|exists:tbl_supplier,id',
@@ -277,25 +303,25 @@ class PenerimaanController extends Controller
             'items' => 'required|json',
             'file' => 'nullable|file|mimes:pdf|max:2048'
         ]);
-    
+
         try {
             DB::beginTransaction();
-    
+
             // Decode items
             $items = json_decode($validated['items'], true);
-            
+
             if (!is_array($items)) {
                 throw ValidationException::withMessages([
                     'items' => ['Format items tidak valid']
                 ]);
             }
-    
+
             if (count($items) === 0) {
                 throw ValidationException::withMessages([
                     'items' => ['Minimal harus ada 1 item']
                 ]);
             }
-    
+
             // Validasi setiap item
             foreach ($items as $item) {
                 $validator = Validator::make($item, [
@@ -303,37 +329,48 @@ class PenerimaanController extends Controller
                     'jenis_kendaraan' => 'required',
                     'nama_sparepart' => 'required',
                     'qty' => 'required|numeric|min:1',
-                    'harga' => 'required|numeric|min:0'
+                    'harga' => 'required|numeric|min:0',
+                    'qty_diterima' => 'required|numeric|min:0|lte:qty', // Tambahkan validasi qty_diterima
+                    'sparepart_id' => 'required|exists:tbl_sp,id' // Pastikan ada relasi ke sparepart
                 ]);
-    
+
                 if ($validator->fails()) {
                     throw new ValidationException($validator);
                 }
             }
-    
+
             // Update permintaan
             $permintaan = Permintaan::findOrFail($id);
             $permintaan->update([
                 'tanggal_dibuat' => $validated['tanggal_dibuat'],
                 'supplier_id' => $validated['supplier_id'],
                 'deskripsi' => $validated['deskripsi'],
-                'unit_pembuat' => auth()->user()->name // Sesuaikan dengan kebutuhan
+                'unit_pembuat' => auth()->user()->name
             ]);
-    
+
             // Proses items
             $itemIds = [];
             $totalPayment = 0;
-            
+
+            // 1. Kembalikan stok lama untuk semua item penerimaan terkait
+            foreach ($permintaan->penerimaan->items ?? [] as $oldItem) {
+                DB::table('tbl_sp')
+                    ->where('id', $oldItem->sparepart_id)
+                    ->decrement('stok', $oldItem->qty_diterima);
+            }
+
             foreach ($items as $item) {
                 $itemData = [
                     'kode_sparepart' => $item['kode_sparepart'],
                     'jenis_kendaraan' => $item['jenis_kendaraan'],
                     'nama_sparepart' => $item['nama_sparepart'],
                     'qty' => $item['qty'],
+                    'qty_diterima' => $item['qty_diterima'],
                     'harga' => $item['harga'],
-                    'total_harga' => $item['qty'] * $item['harga']
+                    'total_harga' => $item['qty_diterima'] * $item['harga'],
+                    'sparepart_id' => $item['sparepart_id']
                 ];
-    
+
                 if (!empty($item['id'])) {
                     // Update existing item
                     $permintaan->items()->where('id', $item['id'])->update($itemData);
@@ -343,36 +380,41 @@ class PenerimaanController extends Controller
                     $newItem = $permintaan->items()->create($itemData);
                     $itemIds[] = $newItem->id;
                 }
-                
+
+                // 2. Update stok baru
+                DB::table('tbl_sp')
+                    ->where('id', $item['sparepart_id'])
+                    ->increment('stok', $item['qty_diterima']);
+
                 $totalPayment += $itemData['total_harga'];
             }
-    
+
             // Hapus items yang tidak ada dalam request
             $permintaan->items()->whereNotIn('id', $itemIds)->delete();
-    
+
             // Update total payment
             $permintaan->update(['total_payment' => $totalPayment]);
-    
+
             // Handle file upload
             if ($request->hasFile('file')) {
                 // Hapus file lama jika ada
                 if ($permintaan->file_path && Storage::exists($permintaan->file_path)) {
                     Storage::delete($permintaan->file_path);
                 }
-                
+
                 // Simpan file baru
                 $path = $request->file('file')->store('permintaan_files');
                 $permintaan->update(['file_path' => $path]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Permintaan berhasil diperbarui',
                 'redirect' => route('permintaan.index')
             ]);
-    
+
         } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -388,6 +430,6 @@ class PenerimaanController extends Controller
             ], 500);
         }
     }
-        
-                        
+
+
 }
