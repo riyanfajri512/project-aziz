@@ -53,6 +53,8 @@ Route::middleware(['auth'])->group(function () {
 
     // Pendistribusian
     Route::get('/pendistribusian', [PendistibusianController::class, 'index'])->name('pendistribusian');
+    Route::get('/pendistribusian/list', [PendistibusianController::class, 'getlistPendistribusian'])->name('pendistribusian.list');
+    Route::get('/pendistribusian/items/{id}', [PendistibusianController::class, 'getItems'])->name('pendistribusian.items');
     Route::get('/pendistribusian/tambah', [PendistibusianController::class, 'tambah'])->name('pendistribusian.tambah');
     Route::post('pendistribusian/store', [PendistibusianController::class, 'store'])->name('pendistribusian.store');
 

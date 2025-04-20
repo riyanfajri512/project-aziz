@@ -29,40 +29,43 @@
             <div class="page-title">
                 <h3>Penerimaan</h3>
             </div>
-        </div>
-        <div class="row">
-            <div class="col-md-12 col-lg-12">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="col-md-4">
-                                <input type="date" class="form-control" id="filterTanggal" placeholder="Filter Tanggal">
-                            </div>
-                            <div>
-                                <a href="{{ route('penerimaan.tambahan') }}" class="btn btn-primary">Tambah Penerimaan</a>
+
+            <div class="row">
+                <div class="col-md-12 col-lg-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="col-md-4">
+                                    <input type="date" class="form-control" id="filterTanggal"
+                                        placeholder="Filter Tanggal">
+                                </div>
+                                <div>
+                                    <a href="{{ route('penerimaan.tambahan') }}" class="btn btn-primary">Tambah
+                                        Penerimaan</a>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive" style="overflow-x: auto;">
-                            <table class="table table-striped table-hover" id="tabelPenerimaan"
-                                style="width: max-content; min-width: 100%;">
-                                <thead class="table-dark">
-                                    <tr>
-                                        <th>No</th>
-                                        <th>Status</th>
-                                        <th>Kode Penerimaan</th>
-                                        <th>Tanggal</th>
-                                        <th>User</th>
-                                        <th>Kode Permintaan</th>
-                                        <th>Grand Total</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- Data akan diisi oleh DataTables -->
-                                </tbody>
-                            </table>
+                        <div class="card-body">
+                            <div class="table-responsive" style="overflow-x: auto;">
+                                <table class="table table-striped table-hover" id="tabelPenerimaan"
+                                    style="width: max-content; min-width: 100%;">
+                                    <thead class="table-dark">
+                                        <tr>
+                                            <th>No</th>
+                                            <th>Status</th>
+                                            <th>Kode Penerimaan</th>
+                                            <th>Tanggal</th>
+                                            <th>User</th>
+                                            <th>Kode Permintaan</th>
+                                            <th>Grand Total</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Data akan diisi oleh DataTables -->
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -281,7 +284,7 @@
                             beforeSend: function() {
                                 $('.delete-btn').prop('disabled', true).html(
                                     '<i class="fas fa-spinner fa-spin me-1"></i> Menghapus...'
-                                    );
+                                );
                             },
                             success: function(response) {
                                 if (response.success) {
