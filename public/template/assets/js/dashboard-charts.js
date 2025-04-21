@@ -1,36 +1,38 @@
 // Data untuk chart
+// Data untuk chart
 const chartData = {
-  labels: [
-    "Jan",
-    "Feb",
-    "Mar",
-    "Apr",
-    "Mei",
-    "Jun",
-    "Jul",
-    "Ags",
-    "Sep",
-    "Okt",
-    "Nov",
-    "Des",
-  ],
-  datasets: [
-    {
-      label: "Sparepart Keluar",
-      data: [45, 60, 55, 80, 65, 70, 85, 75, 90, 110, 95, 120],
-      backgroundColor: "rgba(255, 99, 132, 0.7)", // Merah
-      borderColor: "rgba(255, 99, 132, 1)",
-      borderWidth: 1,
-    },
-    {
-      label: "Sparepart Masuk",
-      data: [60, 70, 65, 75, 80, 85, 75, 95, 100, 90, 115, 130],
-      backgroundColor: "rgba(75, 192, 192, 0.7)", // Hijau
-      borderColor: "rgba(75, 192, 192, 1)",
-      borderWidth: 1,
-    },
-  ],
-};
+    labels: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "Mei",
+      "Jun",
+      "Jul",
+      "Ags",
+      "Sep",
+      "Okt",
+      "Nov",
+      "Des",
+    ],
+    datasets: [
+      {
+        label: "Sparepart Keluar",
+        data: @json($keluarPerBulan),
+        backgroundColor: "rgba(255, 99, 132, 0.7)", // Merah
+        borderColor: "rgba(255, 99, 132, 1)",
+        borderWidth: 1,
+      },
+      {
+        label: "Sparepart Masuk",
+        data: @json($masukPerBulan),
+        backgroundColor: "rgba(75, 192, 192, 0.7)", // Hijau
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 1,
+      },
+    ],
+  };
+
 
 // Inisialisasi chart
 const distribusiChart = document.getElementById("distribusiChart");
