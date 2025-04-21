@@ -60,6 +60,8 @@ Route::middleware(['auth'])->group(function () {
 
     // History
     Route::get('/history' ,[HistoryController::class, 'index'])->name('history');
+    Route::post('/history/export', [HistoryController::class, 'exportPDF'])->name('history.export');
+
 
     // Jenis JenisKendaraanController
     Route::get('/jeniskendaraan', [JenisKendaraanController::class, 'index'])->name('jenis-kendaraan');

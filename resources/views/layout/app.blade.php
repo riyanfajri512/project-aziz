@@ -59,9 +59,9 @@
                         <li>
                             <a href="{{ route('supplier') }}"><i class="fas fa-angle-right"></i> Supplier</a>
                         </li>
-                        <li>
+                        {{-- <li>
                             <a href="{{ route('kategori') }}"><i class="fas fa-angle-right"></i> Kategori</a>
-                        </li>
+                        </li> --}}
                         <li>
                             <a href="{{ route('user') }}"><i class="fas fa-angle-right"></i> User</a>
                         </li>

@@ -44,8 +44,10 @@
                                         {{-- Tombol Aksi --}}
                                         <div class="col-12 d-flex flex-wrap gap-2">
                                             <button type="submit" class="btn btm-sm btn-primary">Filter</button>
-                                            <a href="{{ route('history') }}" class="btn btm-sm btn-outline-secondary">Reset</a>
-                                            <button type="button" class="btn btm-sm btn-danger">Export PDF</button>
+                                            <a href="{{ route('history') }}"
+                                                class="btn btm-sm btn-outline-secondary">Reset</a>
+                                            <button type="button" class="btn btn-danger" id="btnExportPdf">Export
+                                                PDF</button>
                                         </div>
                                     </form>
 
@@ -110,6 +112,47 @@
                 "ordering": true,
                 "info": true,
                 "autoWidth": false
+            });
+
+
+            $('#btnExportPdf').on('click', function() {
+                let tanggal_awal = $('#tanggal_awal').val();
+                let tanggal_akhir = $('#tanggal_akhir').val();
+                let jenis = $('#jenis').val();
+
+                // Buat form secara dinamis
+                let form = $('<form>', {
+                    action: "{{ route('history.export') }}",
+                    method: 'POST',
+                    target: '_blank'
+                });
+
+                // CSRF token
+                form.append($('<input>', {
+                    type: 'hidden',
+                    name: '_token',
+                    value: '{{ csrf_token() }}'
+                }));
+
+                // Data filter
+                form.append($('<input>', {
+                    type: 'hidden',
+                    name: 'tanggal_awal',
+                    value: tanggal_awal
+                }));
+                form.append($('<input>', {
+                    type: 'hidden',
+                    name: 'tanggal_akhir',
+                    value: tanggal_akhir
+                }));
+                form.append($('<input>', {
+                    type: 'hidden',
+                    name: 'jenis',
+                    value: jenis
+                }));
+
+                // Submit form ke tab baru
+                form.appendTo('body').submit().remove();
             });
         });
     </script>
