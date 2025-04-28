@@ -28,9 +28,8 @@
         <nav id="sidebar">
             <div class="sidebar-header">
                 <div class="container">
-                    <img src="{{ asset('template/assets/img/logo_indomaret.png') }}"
-                    style="width: 150px; height: auto;"
-                         alt="bootraper logo" class="app-logo">
+                    <img src="{{ asset('template/assets/img/logo_indomaret.png') }}" style="width: 150px; height: auto;"
+                        alt="bootraper logo" class="app-logo">
                 </div>
             </div>
             <ul class="list-unstyled components text-secondary">
@@ -50,33 +49,34 @@
                     <a href="{{ route('history') }}"><i class="fas fa-history"></i> History</a>
                 </li>
 
-                <li>
-                    <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false"
-                        class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group">
-                        </i> MD</a>
-                    <ul class="collapse list-unstyled" id="uielementsmenu">
+                @if (Auth::user()->role === 'admin')
+                    <li>
+                        <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false"
+                            class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group">
+                            </i> MD</a>
+                        <ul class="collapse list-unstyled" id="uielementsmenu">
 
-                        <li>
-                            <a href="{{ route('supplier') }}"><i class="fas fa-angle-right"></i> Supplier</a>
-                        </li>
-                        {{-- <li>
+                            <li>
+                                <a href="{{ route('supplier') }}"><i class="fas fa-angle-right"></i> Supplier</a>
+                            </li>
+                            {{-- <li>
                             <a href="{{ route('kategori') }}"><i class="fas fa-angle-right"></i> Kategori</a>
                         </li> --}}
-                        <li>
-                            <a href="{{ route('user') }}"><i class="fas fa-angle-right"></i> User</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('jenis-kendaraan') }}"><i class="fas fa-angle-right"></i> Jenis
-                                Kendaraan</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('lokasi') }}"><i class="fas fa-angle-right"></i>Lokasi</a>
-                        </li>
-                        <li>
-                            <a href="{{ route('sp') }}"><i class="fas fa-angle-right"></i> Sparepart</a>
-                        </li>
-                        </>
-                </li>
+                            <li>
+                                <a href="{{ route('user') }}"><i class="fas fa-angle-right"></i> User</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('jenis-kendaraan') }}"><i class="fas fa-angle-right"></i> Jenis
+                                    Kendaraan</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('lokasi') }}"><i class="fas fa-angle-right"></i>Lokasi</a>
+                            </li>
+                            <li>
+                                <a href="{{ route('sp') }}"><i class="fas fa-angle-right"></i> Sparepart</a>
+                            </li>
+                    </li>
+                @endif
         </nav>
         <div id="body" class="active">
             <!-- navbar navigation component -->
