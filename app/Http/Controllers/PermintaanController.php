@@ -19,7 +19,7 @@ class PermintaanController extends Controller
     {
 
 
-
+        
         return view('permintaan.indexpermintaan');
     }
 

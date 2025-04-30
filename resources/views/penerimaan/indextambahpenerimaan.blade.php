@@ -321,7 +321,8 @@
                             showConfirmButton: false,
                             willClose: () => {
                                 location
-                            .reload(); // Reload halaman setelah SweetAlert ditutup
+                            .reload();
+                            window.location.href = "{{ route('penerimaan.index') }}";
                             }
                         });
                     },

@@ -44,7 +44,7 @@
                     <a href="{{ route('penerimaan.index') }}"><i class="fas fa-box-open"></i> Penerimaan</a>
                 </li>
                 <li>
-                    <a href="{{ route('pendistribusian') }}"><i class="fas fa-truck"></i> Pendistribusian</a>
+                    <a href="{{ route('pendistribusian.index') }}"><i class="fas fa-truck"></i> Pendistribusian</a>
                 </li>
                 <li>
                     <a href="{{ route('history') }}"><i class="fas fa-history"></i> History</a>

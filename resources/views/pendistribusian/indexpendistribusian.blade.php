@@ -40,32 +40,24 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr>
-                                        <td>1</td>
-                                        <td>D001</td>
-                                        <td>1001</td>
-                                        <td>U001</td>
-                                        <td>SPD001</td>
-                                        <td>2</td>
-                                        <td>2025-03-26</td>
-                                        <td>
-                                            <button class="btn btn-primary btn-sm">Edit</button>
-                                            <button class="btn btn-danger btn-sm">Delete</button>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>2</td>
-                                        <td>D002</td>
-                                        <td>1002</td>
-                                        <td>U002</td>
-                                        <td>SPD002</td>
-                                        <td>3</td>
-                                        <td>2025-03-27</td>
-                                        <td>
-                                            <button class="btn btn-primary btn-sm">Edit</button>
-                                            <button class="btn btn-danger btn-sm">Delete</button>
-                                        </td>
-                                    </tr>
+                                    @foreach ($pendistribusian as $item)
+                                        <tr>
+                                            <td>{{ $loop->iteration }}</td>
+                                            <td>{{ $item->kode_perbaikan }}</td>
+                                            <td>{{ $item->user->name }}</td>
+                                            <td>{{ $item->sparepart_distribusi_id }}</td>
+                                            <td>{{ $item->jumlah }}</td>
+                                            <td>{{ $item->plat_nomor }}</td>
+                                            <td>{{ $item->tanggal }}</td>
+                                            <td>
+                                                <a href="{{ route('pendistribusian.edit', $item->id) }}"
+                                                    class="btn btn-warning">Edit</a>
+                                                <form action="{{ route('pendistribusian.destroy', $item->id) }}"
+                                                    method="POST" style="display: inline;">
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    @endforeach
                                 </tbody>
                             </table>
                         </div>
@@ -76,5 +68,4 @@
     </div>
 @endsection
 @section('script')
-
 @endsection

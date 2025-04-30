@@ -512,6 +512,7 @@
                         }).then((result) => {
                             if (result.isConfirmed) {
                                 location.reload();
+                                window.location.href = "{{ route('permintaan.index') }}";
                             }
                         });
                     },

@@ -18,7 +18,6 @@
                     </div>
                 </div>
                 <div class="modal-footer d-flex justify-content-between">
-                    <!-- Tombol akan disisipkan via JavaScript -->
                 </div>
             </div>
         </div>

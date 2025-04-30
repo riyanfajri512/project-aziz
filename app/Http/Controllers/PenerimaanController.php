@@ -201,7 +201,6 @@ class PenerimaanController extends Controller
                 // Create PenerimaanItem
                 PenerimaanItem::create([
                     'penerimaan_id' => $penerimaan->id,
-                    'sparepart_id' => $sparepart->id,
                     'kode_sparepart' => $itemData['kode_sparepart'],
                     'jenis_kendaraan' => $itemData['jenis_kendaraan'],
                     'nama_sparepart' => $itemData['nama_sparepart'],
@@ -241,6 +240,7 @@ class PenerimaanController extends Controller
                 'trace' => $e->getTraceAsString() // Lebih detail untuk debugging
             ], 500);
         }
+        
     }
 
     private function calculateGrandTotal($items)
@@ -295,70 +295,86 @@ class PenerimaanController extends Controller
     }
     public function update(Request $request, $id)
     {
-        // Validasi input utama
-        $validated = $request->validate([
-            'tanggal_dibuat' => 'required|date',
-            'supplier_id' => 'required|exists:tbl_supplier,id',
-            'deskripsi' => 'nullable|string',
-            'items' => 'required|json',
-            'file' => 'nullable|file|mimes:pdf|max:2048'
-        ]);
-
         try {
+            // First, validate the basic request structure
+            $validated = $request->validate([
+                'tanggal' => 'required|date',
+                'permintaan_id' => 'required|exists:tbl_permintaan,id',
+                'kode_penerimaan' => 'required|string',
+                'items' => 'required|array',
+                'items.*.kode_sparepart' => 'required|string',
+                'items.*.jenis_kendaraan' => 'required|string',
+                'items.*.nama_sparepart' => 'required|string',
+                'items.*.qty' => 'required|numeric|min:0',
+                'items.*.qty_diterima' => 'required|numeric|min:0|lte:items.*.qty',
+                'items.*.harga' => 'required|numeric|min:0',
+                'deskripsi' => 'nullable|string'
+            ]);
+    
             DB::beginTransaction();
-
-            // Decode items
-            $items = json_decode($validated['items'], true);
-
-            if (!is_array($items)) {
+    
+            // Properly handle items whether they're a JSON string or already an array
+            $items = is_string($request->items) ? json_decode($request->items, true) : $request->items;
+    
+            if (!is_array($items) || count($items) === 0) {
                 throw ValidationException::withMessages([
-                    'items' => ['Format items tidak valid']
+                    'items' => ['Format items tidak valid atau kosong.']
                 ]);
             }
+    
+            // Validate each item individually
+            foreach ($items as $index => $item) {
 
-            if (count($items) === 0) {
-                throw ValidationException::withMessages([
-                    'items' => ['Minimal harus ada 1 item']
-                ]);
-            }
+                if (empty($item['kode_sparepart'])) {
 
-            // Validasi setiap item
-            foreach ($items as $item) {
+                    if (!empty($item['kode_sparepart'])) {
+                        $sparepart = Sp::where('kode', $item['kode_sparepart'])->first();
+                        if ($sparepart) {
+                            $items[$index]['kode_sparepart'] = $sparepart->id;
+                        } else {
+                            throw ValidationException::withMessages([
+                                'items.'.$index.'.kode_sparepart' => ['Sparepart dengan kode '.$item['kode_sparepart'].' tidak ditemukan.']
+                            ]);
+                        }
+                    } else {
+                        throw ValidationException::withMessages([
+                            'items.'.$index.'.kode_sparepart' => ['The kode_sparepart field is required.']
+                        ]);
+                    }
+                }
+    
+                // Validate other required fields
                 $validator = Validator::make($item, [
                     'kode_sparepart' => 'required',
                     'jenis_kendaraan' => 'required',
                     'nama_sparepart' => 'required',
-                    'qty' => 'required|numeric|min:1',
+                    'qty' => 'required|numeric|min:0',
+                    'qty_diterima' => 'required|numeric|min:0',
                     'harga' => 'required|numeric|min:0',
-                    'qty_diterima' => 'required|numeric|min:0|lte:qty', // Tambahkan validasi qty_diterima
-                    'sparepart_id' => 'required|exists:tbl_sp,id' // Pastikan ada relasi ke sparepart
                 ]);
-
+    
                 if ($validator->fails()) {
                     throw new ValidationException($validator);
                 }
             }
-
-            // Update permintaan
-            $permintaan = Permintaan::findOrFail($id);
-            $permintaan->update([
-                'tanggal_dibuat' => $validated['tanggal_dibuat'],
-                'supplier_id' => $validated['supplier_id'],
-                'deskripsi' => $validated['deskripsi'],
-                'unit_pembuat' => auth()->user()->name
+    
+            $penerimaan = Penerimaan::with('items')->findOrFail($id);
+            $penerimaan->update([
+                'tanggal' => $validated['tanggal'],
+                'deskripsi' => $validated['deskripsi'] ?? '',
+                'user_id' => auth()->id()
             ]);
-
-            // Proses items
-            $itemIds = [];
-            $totalPayment = 0;
-
-            // 1. Kembalikan stok lama untuk semua item penerimaan terkait
-            foreach ($permintaan->penerimaan->items ?? [] as $oldItem) {
+    
+            // 1. Kembalikan stok lama
+            foreach ($penerimaan->items as $oldItem) {
                 DB::table('tbl_sp')
-                    ->where('id', $oldItem->sparepart_id)
+                    ->where('id', $oldItem->kode_sparepart)
                     ->decrement('stok', $oldItem->qty_diterima);
             }
-
+    
+            $itemIds = [];
+            $totalPayment = 0;
+    
             foreach ($items as $item) {
                 $itemData = [
                     'kode_sparepart' => $item['kode_sparepart'],
@@ -368,53 +384,51 @@ class PenerimaanController extends Controller
                     'qty_diterima' => $item['qty_diterima'],
                     'harga' => $item['harga'],
                     'total_harga' => $item['qty_diterima'] * $item['harga'],
-                    'sparepart_id' => $item['sparepart_id']
                 ];
-
+    
                 if (!empty($item['id'])) {
-                    // Update existing item
-                    $permintaan->items()->where('id', $item['id'])->update($itemData);
+                    $penerimaan->items()->where('id', $item['id'])->update($itemData);
                     $itemIds[] = $item['id'];
                 } else {
-                    // Create new item
-                    $newItem = $permintaan->items()->create($itemData);
+                    $newItem = $penerimaan->items()->create($itemData);
                     $itemIds[] = $newItem->id;
                 }
-
-                // 2. Update stok baru
-                DB::table('tbl_sp')
-                    ->where('id', $item['sparepart_id'])
-                    ->increment('stok', $item['qty_diterima']);
-
+                
+                foreach ($items as $item) {
+                    // Cari sparepart berdasarkan kode
+                    $sparepart = Sp::where('kode', $item['kode_sparepart'])->first();
+                
+                    if (!$sparepart) {
+                        throw new \Exception("Sparepart dengan kode {$item['kode_sparepart']} tidak ditemukan");
+                    }
+                
+                    // Update stok di tbl_sp
+                    DB::table('tbl_sp')
+                        ->where('id', $sparepart->id)
+                        ->increment('stok', $item['qty_diterima']);
+                }
+    
                 $totalPayment += $itemData['total_harga'];
             }
-
-            // Hapus items yang tidak ada dalam request
-            $permintaan->items()->whereNotIn('id', $itemIds)->delete();
-
-            // Update total payment
-            $permintaan->update(['total_payment' => $totalPayment]);
-
-            // Handle file upload
+    
+            $penerimaan->items()->whereNotIn('id', $itemIds)->delete();
+            $penerimaan->update(['grand_total' => $totalPayment]);
+    
             if ($request->hasFile('file')) {
-                // Hapus file lama jika ada
-                if ($permintaan->file_path && Storage::exists($permintaan->file_path)) {
-                    Storage::delete($permintaan->file_path);
+                if ($penerimaan->file_path && Storage::exists($penerimaan->file_path)) {
+                    Storage::delete($penerimaan->file_path);
                 }
-
-                // Simpan file baru
-                $path = $request->file('file')->store('permintaan_files');
-                $permintaan->update(['file_path' => $path]);
+                $path = $request->file('file')->store('penerimaan_files');
+                $penerimaan->update(['file_path' => $path]);
             }
-
+    
             DB::commit();
-
+    
             return response()->json([
                 'success' => true,
-                'message' => 'Permintaan berhasil diperbarui',
-                'redirect' => route('permintaan.index')
+                'message' => 'Penerimaan berhasil diperbarui',
+                'redirect' => route('penerimaan.index')
             ]);
-
         } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -426,10 +440,10 @@ class PenerimaanController extends Controller
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
+                'trace' => $e->getTraceAsString() // For debugging
             ], 500);
         }
     }
-
 
 }

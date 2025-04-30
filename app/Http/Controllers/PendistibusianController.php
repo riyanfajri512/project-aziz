@@ -13,7 +13,8 @@ class PendistibusianController extends Controller
 {
     public function index()
     {
-        return view('pendistribusian.indexpendistribusian');
+        $pendistribusian = Pendistribusian::all();
+        return view('pendistribusian.indexpendistribusian', compact('pendistribusian'));
     }
 
     public function tambah()
@@ -98,5 +99,18 @@ class PendistibusianController extends Controller
                 'message' => 'Gagal menyimpan data: ' . $e->getMessage()
             ], 500);
         }
+        
+    }
+    public function edit($id)
+    {
+        $distribusi = Pendistribusian::findOrFail($id);
+        $spareparts = Sp::all();
+        $lokasiList = Lokasi::all();
+
+        return view('pendistribusian.editpendistribusian', [
+            'distribusi' => $distribusi,
+            'spareparts' => $spareparts,
+            'lokasiList' => $lokasiList,
+        ]);
     }
 }

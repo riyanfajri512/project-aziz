@@ -585,7 +585,7 @@
                             confirmButtonText: 'OK'
                         }).then((result) => {
                             if (result.isConfirmed && response.redirect) {
-                                window.location.href = response.redirect;
+                                window.location.href = "{{ route('permintaan.index') }}";
                             }
                         });
                     },
