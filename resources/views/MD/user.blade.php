@@ -32,8 +32,8 @@
                             <label for="role">Role</label>
                             <select class="form-control" id="role" name="role" required>
                                 <option value="">Pilih Role</option>
-                                <option value="admin">Admin</option>
-                                <option value="user">User</option>
+                                <option value="atasan">Atasan</option>
+                                <option value="karyawan">Karyawan</option>
                             </select>
                         </div>
                         <div class="d-grid">
@@ -79,7 +79,7 @@
                                                 <td>{{ $user->name }}</td>
                                                 <td>{{ $user->email }}</td>
                                                 <td>
-                                                    <span class="badge bg-{{ $user->role == 'admin' ? 'primary' : 'success' }}">
+                                                    <span class="badge bg-{{ $user->role == 'atasan' ? 'primary' : 'success' }}">
                                                         {{ ucfirst($user->role) }}
                                                     </span>
                                                 </td>

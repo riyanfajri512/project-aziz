@@ -70,7 +70,7 @@ class PermintaanController extends Controller
                             <i class="fas fa-eye"></i>
                          </button>';
                 if (($data->status->nama ?? 'Pending') == 'Pending') {
-                    if (auth()->user()->role === 'admin') {
+                    if (auth()->user()->role === 'atasan') {
                         $btn .= '<button class="btn btn-sm btn-success approve-btn" data-id="' . $data->id . '" title="Approve">
                                     <i class="fas fa-check"></i>
                                 </button>';

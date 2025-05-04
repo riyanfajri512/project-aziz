@@ -49,7 +49,7 @@
                     <a href="{{ route('history') }}"><i class="fas fa-history"></i> History</a>
                 </li>
 
-                @if (Auth::user()->role === 'admin')
+                @if (Auth::user()->role === 'atasan')
                     <li>
                         <a href="#uielementsmenu" data-bs-toggle="collapse" aria-expanded="false"
                             class="dropdown-toggle no-caret-down"><i class="fas fa-layer-group">
