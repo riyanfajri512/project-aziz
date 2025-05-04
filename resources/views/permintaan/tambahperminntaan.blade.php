@@ -1,5 +1,5 @@
 @extends('layout.app')
-@section('title', 'Tambah Pendistribusian')
+@section('title', 'Tambah Permintaan')
 
 @section('main')
 
