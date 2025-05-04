@@ -34,13 +34,14 @@
     <div class="content">
         <div class="container">
             <div class="page-title">
-                <h3>SP</h3>
+                <h3>Sparepart</h3>
             </div>
             <div class="row">
                 <div class="col-md-12 col-lg-12">
                     <div class="card">
                         <div class="card-header">
-                            <button id="btnSP" class="btn btn-primary">Tambah SP</button>
+                            <h5>List Sparepart</h5>
+                            {{-- <button id="btnSP" class="btn btn-primary">Tambah SP</button> --}}
                         </div>
                         <div class="card-body">
                             <div class="table-responsive">
@@ -50,7 +51,8 @@
                                             <th>No</th>
                                             <th>Kode</th>
                                             <th>Nama</th>
-                                            <th>Aksi</th>
+                                            <th>Stok</th>
+                                            {{-- <th>Aksi</th> --}}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -59,12 +61,13 @@
                                                 <td>{{ $loop->iteration }}</td>
                                                 <td>{{ $jenis->kode }}</td>
                                                 <td>{{ $jenis->nama }}</td>
-                                                <td>
+                                                <td>{{ $jenis->stok }}</td>
+                                                {{-- <td>
                                                     <button class="btn btn-primary btnEdit" data-id="{{ $jenis->id }}"
                                                         data-no="{{ $jenis->no }}" data-nama="{{ $jenis->nama }}">Edit</button>
                                                     <button class="btn btn-danger btnDelete"
                                                         data-id="{{ $jenis->id }}">Hapus</button>
-                                                </td>
+                                                </td> --}}
                                             </tr>
                                         @endforeach
                                     </tbody>
