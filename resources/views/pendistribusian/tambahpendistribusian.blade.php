@@ -193,7 +193,7 @@
 
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" class="btn btn-primary">Simpan</button>
-                                    <a href="{{ route('pendistribusian.index') }}" class="btn btn-secondary ms-2">Batal</a>
+                                    <a href="{{ route('pendistribusian') }}" class="btn btn-secondary ms-2">Batal</a>
                                 </div>
                             </form>
                         </div>
