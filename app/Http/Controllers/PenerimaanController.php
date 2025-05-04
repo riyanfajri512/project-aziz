@@ -231,7 +231,6 @@ class PenerimaanController extends Controller
                 'data' => $penerimaan,
                 'message' => 'Penerimaan berhasil disimpan'
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -240,7 +239,6 @@ class PenerimaanController extends Controller
                 'trace' => $e->getTraceAsString() // Lebih detail untuk debugging
             ], 500);
         }
-        
     }
 
     private function calculateGrandTotal($items)
@@ -254,7 +252,7 @@ class PenerimaanController extends Controller
     public function exportPdf($id, PDF $pdf)
     {
         $penerimaan = Penerimaan::with(['user', 'permintaan', 'items'])
-                ->findOrFail($id);
+            ->findOrFail($id);
         $pdf = Pdf::loadView('exportPDF.penerimaanPdf', compact('penerimaan'));
         return $pdf->stream('penerimaan.pdf');
     }
@@ -283,7 +281,7 @@ class PenerimaanController extends Controller
 
     public function edit($id)
     {
-         // dd($request->all());
+        // dd($request->all());
         $penerimaan = Penerimaan::findOrFail($id);
         $permintaanList = Permintaan::all(); // Jika kamu butuh daftar permintaan
         // Kalau kamu ingin generate ulang kode penerimaan
@@ -312,21 +310,21 @@ class PenerimaanController extends Controller
                 'items.*.harga' => 'required|numeric|min:0',
                 'deskripsi' => 'nullable|string'
             ]);
-    
+
             DB::beginTransaction();
-    
+
             // Konversi JSON string jadi array jika perlu
             $items = is_string($request->items) ? json_decode($request->items, true) : $request->items;
-    
+
             if (!is_array($items) || count($items) === 0) {
                 throw ValidationException::withMessages([
                     'items' => ['Format items tidak valid atau kosong.']
                 ]);
             }
-    
+
             // Ambil data penerimaan lama beserta itemnya
             $penerimaan = Penerimaan::with('items')->findOrFail($id);
-    
+
             foreach ($penerimaan->items as $oldItem) {
                 $oldSparepart = Sp::where('kode', $oldItem->kode_sparepart)->first();
                 if ($oldSparepart) {
@@ -335,20 +333,20 @@ class PenerimaanController extends Controller
                         ->decrement('stok', $oldItem->qty_diterima);
                 }
             }
-    
+
             // 2. Update header penerimaan
             $penerimaan->update([
                 'tanggal' => $validated['tanggal'],
                 'deskripsi' => $validated['deskripsi'] ?? '',
                 'user_id' => auth()->id()
             ]);
-    
+
             $itemIds = [];
             $totalPayment = 0;
-    
+
             // 3. Proses setiap item baru
             foreach ($items as $index => $item) {
-    
+
                 // Ambil ID sparepart berdasarkan kode
                 $sparepart = Sp::where('kode', $item['kode_sparepart'])->first();
                 if (!$sparepart) {
@@ -356,9 +354,10 @@ class PenerimaanController extends Controller
                         "items.$index.kode_sparepart" => ["Sparepart dengan kode {$item['kode_sparepart']} tidak ditemukan."]
                     ]);
                 }
-    
+
                 $itemData = [
-                    'kode_sparepart' => $sparepart->id, // simpan ID
+                    'sparepart_id' => $sparepart->id,
+                    'kode_sparepart' =>  $item['kode_sparepart'],
                     'jenis_kendaraan' => $item['jenis_kendaraan'],
                     'nama_sparepart' => $item['nama_sparepart'],
                     'qty' => $item['qty'],
@@ -366,7 +365,7 @@ class PenerimaanController extends Controller
                     'harga' => $item['harga'],
                     'total_harga' => $item['qty_diterima'] * $item['harga'],
                 ];
-    
+
                 if (!empty($item['id'])) {
                     $penerimaan->items()->where('id', $item['id'])->update($itemData);
                     $itemIds[] = $item['id'];
@@ -374,21 +373,21 @@ class PenerimaanController extends Controller
                     $newItem = $penerimaan->items()->create($itemData);
                     $itemIds[] = $newItem->id;
                 }
-    
+
                 // Tambahkan kembali stok sesuai qty_diterima baru
                 DB::table('tbl_sp')
                     ->where('id', $sparepart->id)
                     ->increment('stok', $item['qty_diterima']);
-    
+
                 $totalPayment += $itemData['total_harga'];
             }
-    
+
             // 4. Hapus item yang tidak terpakai lagi
             $penerimaan->items()->whereNotIn('id', $itemIds)->delete();
-    
+
             // 5. Update grand total
             $penerimaan->update(['grand_total' => $totalPayment]);
-    
+
             // 6. Proses upload file
             if ($request->hasFile('file')) {
                 if ($penerimaan->file_path && Storage::exists($penerimaan->file_path)) {
@@ -397,15 +396,14 @@ class PenerimaanController extends Controller
                 $path = $request->file('file')->store('penerimaan_files');
                 $penerimaan->update(['file_path' => $path]);
             }
-    
+
             DB::commit();
-    
+
             return response()->json([
                 'success' => true,
                 'message' => 'Penerimaan berhasil diperbarui',
                 'redirect' => route('penerimaan.index')
             ]);
-    
         } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -422,6 +420,4 @@ class PenerimaanController extends Controller
             ], 500);
         }
     }
-    
-
 }

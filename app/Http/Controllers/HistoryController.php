@@ -20,7 +20,7 @@ class HistoryController extends Controller
             'tbl_pendistribusian_items.nama_sparepart',
             'tbl_pendistribusian_items.jenis_kendaraan',
             'tbl_pendistribusian_items.qty_distribusi as qty',
-            'tbl_pendistribusian_items.harga'
+            'tbl_pendistribusian_items.total as harga'
         )
         ->unionAll(
             DB::table('tbl_penerimaan')
@@ -33,7 +33,7 @@ class HistoryController extends Controller
                     'tbl_penerimaan_items.nama_sparepart',
                     'tbl_penerimaan_items.jenis_kendaraan',
                     'tbl_penerimaan_items.qty_diterima as qty',
-                    'tbl_penerimaan_items.harga'
+                    'tbl_penerimaan_items.total_harga as harga'
                 )
         );
 
@@ -66,7 +66,7 @@ class HistoryController extends Controller
                 'tbl_pendistribusian_items.nama_sparepart',
                 'tbl_pendistribusian_items.jenis_kendaraan',
                 'tbl_pendistribusian_items.qty_distribusi as qty',
-                'tbl_pendistribusian_items.harga'
+                 'tbl_pendistribusian_items.total as harga'
             )
             ->unionAll(
                 DB::table('tbl_penerimaan')
@@ -79,7 +79,7 @@ class HistoryController extends Controller
                         'tbl_penerimaan_items.nama_sparepart',
                         'tbl_penerimaan_items.jenis_kendaraan',
                         'tbl_penerimaan_items.qty_diterima as qty',
-                        'tbl_penerimaan_items.harga'
+                       'tbl_penerimaan_items.total_harga as harga'
                     )
             );
 
