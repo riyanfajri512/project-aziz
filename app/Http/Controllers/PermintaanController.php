@@ -66,24 +66,23 @@ class PermintaanController extends Controller
             })
             ->addColumn('action', function ($data) {
                 $btn = '<div class="btn-group">';
-
-                // View Button
                 $btn .= '<button class="btn btn-sm btn-info view-btn" data-id="' . $data->id . '" data-bs-toggle="modal" data-bs-target="#detailModal" title="View">
                             <i class="fas fa-eye"></i>
                          </button>';
-
-                // Approve & Reject Buttons (only for pending status)
                 if (($data->status->nama ?? 'Pending') == 'Pending') {
-                    $btn .= '<button class="btn btn-sm btn-success approve-btn" data-id="' . $data->id . '" title="Approve">
-                                <i class="fas fa-check"></i>
-                             </button>';
-                    $btn .= '<button class="btn btn-sm btn-danger reject-btn"
-                             data-id="' . $data->id . '"
-                             data-bs-toggle="modal"
-                             data-bs-target="#rejectModal"
-                             title="Reject">
-                                <i class="fas fa-times"></i>
-                             </button>';
+                    if (auth()->user()->role === 'admin') {
+                        $btn .= '<button class="btn btn-sm btn-success approve-btn" data-id="' . $data->id . '" title="Approve">
+                                    <i class="fas fa-check"></i>
+                                </button>';
+                        $btn .= '<button class="btn btn-sm btn-danger reject-btn"
+                                data-id="' . $data->id . '"
+                                data-bs-toggle="modal"
+                                data-bs-target="#rejectModal"
+                                title="Reject">
+                                    <i class="fas fa-times"></i>
+                                </button>';
+                    }
+
                 }
                 // Show Rejection Reason Button (if status is Rejected)
                 elseif (($data->status->nama ?? '') == 'Rejected') {

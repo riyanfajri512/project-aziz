@@ -147,7 +147,7 @@ class PenerimaanController extends Controller
             ->where('status_id', 2) // Status "Diterima"
             ->get();
         $lastPenerimaan = Penerimaan::orderBy('id', 'desc')->first();
-        $nextNumber = $lastPenerimaan ? (int) explode('/', $lastPenerimaan->kode_pemesanan)[0] + 1 : 1;
+        $nextNumber = $lastPenerimaan ? (int) explode('/', $lastPenerimaan->kode_penerimaan)[0] + 1 : 1;
         $kodePemesanan = sprintf('%04d', $nextNumber) . '/voum-2';
         return view('penerimaan.indextambahpenerimaan', [
             'kodePeneriman' => $kodePemesanan,

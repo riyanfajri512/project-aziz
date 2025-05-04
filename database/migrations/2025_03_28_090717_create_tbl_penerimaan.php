@@ -38,7 +38,7 @@ return new class extends Migration
             $table->timestamps();
 
             // Relasi ke tbl_penerimaan
-            $table->foreign('penerimaan_id')->references('permintaan_id')->on('tbl_penerimaan')->onDelete('cascade');
+            $table->foreign('penerimaan_id')->references('id')->on('tbl_penerimaan')->onDelete('cascade');
         });
     }
 

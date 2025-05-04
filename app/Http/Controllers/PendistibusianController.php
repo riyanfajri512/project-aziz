@@ -8,6 +8,7 @@ use App\Models\PendistribusianItem;
 use App\Models\Sp;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Yajra\DataTables\DataTables;
 
 class PendistibusianController extends Controller
 {
@@ -15,6 +16,55 @@ class PendistibusianController extends Controller
     {
         $pendistribusian = Pendistribusian::all();
         return view('pendistribusian.indexpendistribusian', compact('pendistribusian'));
+    }
+
+
+    public function getlistPendistribusian()
+    {
+        $query = Pendistribusian::with(['user', 'unit'])
+            ->select([
+                'id',
+                'kode_distribusi',
+                'tanggal',
+                'user_id',
+                'unit_id',
+                'deskripsi',
+                'total_harga',
+                'created_at'
+            ]);
+
+        return DataTables::of($query)
+            ->addColumn('action', function($pendistribusian) {
+                return '<button class="btn btn-sm btn-primary view-items" data-id="'.$pendistribusian->id.'">
+                    <i class="fa fa-eye"></i> Lihat Items
+                </button>';
+            })
+            ->editColumn('tanggal', function($pendistribusian) {
+                return date('d/m/Y', strtotime($pendistribusian->tanggal));
+            })
+            ->editColumn('total_harga', function($pendistribusian) {
+                return 'Rp '.number_format($pendistribusian->total_harga, 2, ',', '.');
+            })
+            ->addColumn('user_name', function($pendistribusian) {
+                return $pendistribusian->user->name;
+            })
+            ->addColumn('unit_name', function($pendistribusian) {
+                return $pendistribusian->unit->nama;
+            })
+            ->rawColumns(['action'])
+            ->make(true);
+    }
+
+    public function getItems($id)
+    {
+        $items = PendistribusianItem::with(['sparepart'])
+                    ->where('pendistribusian_id', $id)
+                    ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $items
+        ]);
     }
 
     public function tambah()

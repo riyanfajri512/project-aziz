@@ -52,7 +52,9 @@ Route::middleware(['auth'])->group(function () {
 
 
     // Pendistribusian
-    Route::get('/pendistribusian', [PendistibusianController::class, 'index'])->name('pendistribusian.index');
+    Route::get('/pendistribusian', [PendistibusianController::class, 'index'])->name('pendistribusian');
+    Route::get('/pendistribusian/list', [PendistibusianController::class, 'getlistPendistribusian'])->name('pendistribusian.list');
+    Route::get('/pendistribusian/items/{id}', [PendistibusianController::class, 'getItems'])->name('pendistribusian.items');
     Route::get('/pendistribusian/tambah', [PendistibusianController::class, 'tambah'])->name('pendistribusian.tambah');
     Route::post('pendistribusian/store', [PendistibusianController::class, 'store'])->name('pendistribusian.store');
     route::get('/pendistribusian/{id}/edit', [PendistibusianController::class, 'edit'])->name('pendistribusian.edit');
@@ -60,6 +62,8 @@ Route::middleware(['auth'])->group(function () {
 
     // History
     Route::get('/history' ,[HistoryController::class, 'index'])->name('history');
+    Route::post('/history/export', [HistoryController::class, 'exportPDF'])->name('history.export');
+
 
     // Jenis JenisKendaraanController
     Route::get('/jeniskendaraan', [JenisKendaraanController::class, 'index'])->name('jenis-kendaraan');
