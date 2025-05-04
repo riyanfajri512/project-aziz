@@ -20,6 +20,7 @@ class PendistribusianItem extends Model
         'nama_sparepart',
         'stok_tersedia',
         'qty_distribusi',
+        'jenis_kerusakan',
         'harga',
         'total'
     ];

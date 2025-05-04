@@ -28,7 +28,9 @@ class PendistibusianController extends Controller
                 'tanggal',
                 'user_id',
                 'unit_id',
-                'deskripsi',
+                'nik_user',
+                'nopol',
+                'departemen',
                 'total_harga',
                 'created_at'
             ]);
@@ -51,6 +53,9 @@ class PendistibusianController extends Controller
             ->addColumn('unit_name', function($pendistribusian) {
                 return $pendistribusian->unit->nama;
             })
+            ->addColumn('nik_user', fn($row) => $row->nik_user)
+            ->addColumn('nopol', fn($row) => $row->nopol)
+            ->addColumn('departemen', fn($row) => $row->departemen)
             ->rawColumns(['action'])
             ->make(true);
     }
@@ -90,11 +95,14 @@ class PendistibusianController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'kode_distribusi' => 'required',
+            'nopol' => 'required',
+            'nik_user' => 'required',
+            'departemen' => 'required',
             'unit_id' => 'required|exists:tbl_lokasi,id',
-            'deskripsi' => 'nullable|string',
             'items' => 'required|array',
             'items.*.sparepart_id' => 'required|exists:tbl_sp,id',
-            'items.*.qty_distribusi' => 'required|integer|min:1'
+            'items.*.qty_distribusi' => 'required|integer|min:1',
+            'items.*.jenis_kerusakan' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -105,8 +113,10 @@ class PendistibusianController extends Controller
                 'tanggal' => $validated['tanggal'],
                 'user_id' => auth()->id(),
                 'unit_id' => $validated['unit_id'],
-                'deskripsi' => $validated['deskripsi'],
-                'total_harga' => 0 // Diupdate setelah hitung items
+                'nopol' => $validated['nopol'],
+                'nik_user' => $validated['nik_user'],
+                'departemen' => $validated['departemen'],
+                'total_harga' => 0
             ]);
 
             // Simpan items
@@ -123,7 +133,8 @@ class PendistibusianController extends Controller
                     'stok_tersedia' => $sparepart->stok,
                     'qty_distribusi' => $item['qty_distribusi'],
                     'harga' => $sparepart->harga,
-                    'total' => $sparepart->harga * $item['qty_distribusi']
+                    'total' => $sparepart->harga * $item['qty_distribusi'],
+                    'jenis_kerusakan' => $item['jenis_kerusakan'] ?? null,
                 ]);
 
                 $totalHarga += $distribusiItem->total;
@@ -151,6 +162,8 @@ class PendistibusianController extends Controller
         }
         
     }
+
+
     public function edit($id)
     {
         $distribusi = Pendistribusian::findOrFail($id);

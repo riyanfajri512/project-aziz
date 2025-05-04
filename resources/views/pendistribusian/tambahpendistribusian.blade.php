@@ -79,7 +79,7 @@
                                             <label class="form-label">Nopol</label>
                                             <input type="text" class="form-control" name="nopol" required>
                                         </div>
-                                        
+
                                         <div class="mb-3">
                                             <label class="form-label">Unit Tujuan</label>
                                             <select class="form-control" name="unit_id" required>
@@ -99,7 +99,8 @@
                                                     @foreach ($spareparts as $sp)
                                                         <option value="{{ $sp->id }}" data-kode="{{ $sp->kode }}"
                                                             data-nama="{{ $sp->nama }}" data-harga="{{ $sp->harga }}"
-                                                            data-jenis="{{ $sp->jenis }}" data-stok="{{ $sp->stok }}">
+                                                            data-jenis="{{ $sp->jenis }}"
+                                                            data-stok="{{ $sp->stok }}">
                                                             {{ $sp->kode }} - {{ $sp->nama }}
                                                             ({{ $sp->jenis }})
                                                         </option>
@@ -127,11 +128,6 @@
                                             <label class="form-label">Departemen</label>
                                             <input type="text" class="form-control" name="departemen" required>
                                         </div>
-
-                                        <div class="mb-3">
-                                            <label class="form-label">Qty</label>
-                                            <input type="number" class="form-control" name="qty" min="1" required>
-                                        </div>
                                     </div>
                                 </div>
 
@@ -139,11 +135,12 @@
                                     <table class="table" id="tabel-sparepart-distribusi">
                                         <thead class="thead-light">
                                             <tr>
-                                                <th>Kode Sparepart</th>
+                                              
                                                 <th>Jenis Kendaraan</th>
                                                 <th>Nama Sparepart</th>
                                                 <th class="text-center">Stok Tersedia</th>
                                                 <th class="text-center">Qty Distribusi</th>
+                                                <th>Jenis Kerusakan</th>
                                                 <th class="text-right">Harga</th>
                                                 <th class="text-right">Total</th>
                                                 <th class="text-right">Action</th>
@@ -165,7 +162,8 @@
                                                                 <span class="input-group-text">Rp</span>
                                                             </div>
                                                             <input type="text" class="form-control text-right"
-                                                                id="total_payment" name="total_payment" value="0" readonly>
+                                                                id="total_payment" name="total_payment" value="0"
+                                                                readonly>
                                                         </div>
                                                     </div>
                                                 </td>
@@ -173,24 +171,6 @@
                                         </tfoot>
                                     </table>
                                 </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Jenis Kerusakan</label>
-                                            <textarea class="form-control" name="jenis_kerusakan"></textarea>
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label class="form-label">Deskripsi/Catatan</label>
-                                            <textarea class="form-control" name="deskripsi"></textarea>
-                                            <small class="text-danger d-none">Field ini wajib diisi</small>
-                                        </div>
-                                    </div>
-                                </div>
-
                                 <div class="d-flex justify-content-end">
                                     <button type="submit" class="btn btn-primary">Simpan</button>
                                     <a href="{{ route('pendistribusian') }}" class="btn btn-secondary ms-2">Batal</a>
@@ -206,7 +186,7 @@
 
 @section('script')
     <script>
-        $(document).ready(function () {
+        $(document).ready(function() {
 
             function unformatNumber(numberStr) {
                 return parseFloat(numberStr.replace(/\./g, '')) || 0;
@@ -236,14 +216,14 @@
             function calculateTotal() {
                 let total = 0;
 
-                $('#tabel-sparepart-distribusi tbody tr').each(function () {
+                $('#tabel-sparepart-distribusi tbody tr').each(function() {
                     total += unformatNumber($(this).find('.total-harga').text());
                 });
 
                 $('#total_payment').val(formatRupiah(total));
             }
 
-            $('#btn-add-sparepart').click(function () {
+            $('#btn-add-sparepart').click(function() {
                 const selectedSparepart = $('#sparepart-search option:selected');
                 const sparepartId = selectedSparepart.val();
                 const kode = selectedSparepart.data('kode');
@@ -272,14 +252,16 @@
 
                 const newRow = `
                     <tr data-sparepart-id="${sparepartId}">
-                        <td>${kode}</td>
                         <td>${jenis}</td>
                         <td>${nama}</td>
                         <td class="text-center">${stok}</td>
                         <td class="text-center">
                             <input type="number" class="form-control qty-distribusi"
-                                   value="1" min="1" max="${stok}"
-                                   style="width: 80px; margin: 0 auto;">
+                                value="1" min="1" max="${stok}"
+                                style="width: 80px; margin: 0 auto;">
+                        </td>
+                        <td>
+                            <input type="text" name="jenis_kerusakan" class="form-control jenis_kerusakan" placeholder="Jenis kerusakan">
                         </td>
                         <td class="text-right harga-sparepart">${formatRupiah(harga)}</td>
                         <td class="text-right total-harga">${formatRupiah(harga)}</td>
@@ -296,7 +278,7 @@
                 $('#sparepart-search').val('').trigger('change');
             });
 
-            $(document).on('click', '.btn-remove-sparepart', function () {
+            $(document).on('click', '.btn-remove-sparepart', function() {
                 const row = $(this).closest('tr');
                 const sparepartId = row.data('sparepart-id');
 
@@ -317,7 +299,7 @@
                 });
             });
 
-            $(document).on('change', '.qty-distribusi', function () {
+            $(document).on('change', '.qty-distribusi', function() {
                 const row = $(this).closest('tr');
                 const maxStok = parseInt($(this).attr('max'));
                 const qty = parseInt($(this).val()) || 0;
@@ -339,12 +321,12 @@
 
 
             // Form submission
-            $("#formPendistribusian").submit(function (e) {
+            $("#formPendistribusian").submit(function(e) {
                 e.preventDefault();
 
                 // Validasi form
                 let isValid = true;
-                $(this).find('[required]').each(function () {
+                $(this).find('[required]').each(function() {
                     if ($(this).val().trim() === '') {
                         $(this).addClass('is-invalid');
                         isValid = false;
@@ -378,16 +360,20 @@
                 const formData = {
                     tanggal: $('[name="tanggal"]').val(),
                     kode_distribusi: $('[name="kode_distribusi"]').val(),
+                    nik_user: $('[name="nik_user"]').val(),
+                    nopol: $('[name="nopol"]').val(),
+                    departemen: $('[name="departemen"]').val(),
                     unit_id: $('[name="unit_id"]').val(),
                     deskripsi: $('[name="deskripsi"]').val(),
                     items: []
                 };
 
                 // Collect items data
-                $('#tabel-sparepart-distribusi tbody tr').each(function () {
+                $('#tabel-sparepart-distribusi tbody tr').each(function() {
                     const row = $(this);
                     formData.items.push({
                         sparepart_id: row.data('sparepart-id'),
+                        jenis_kerusakan:row.find('input.jenis_kerusakan').val(),
                         qty_distribusi: parseInt(row.find('input.qty-distribusi').val())
                     });
                 });
@@ -410,7 +396,7 @@
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
-                    success: function (response) {
+                    success: function(response) {
                         Swal.fire({
                             icon: 'success',
                             title: 'Berhasil!',
@@ -422,7 +408,7 @@
                             location.reload();
                         });
                     },
-                    error: function (xhr) {
+                    error: function(xhr) {
                         let errorMessage = 'Terjadi kesalahan saat menyimpan data';
                         if (xhr.responseJSON && xhr.responseJSON.message) {
                             errorMessage = xhr.responseJSON.message;
@@ -437,7 +423,7 @@
             });
 
             // Reset form validation on input
-            $('input').on('input', function () {
+            $('input').on('input', function() {
                 $(this).removeClass('is-invalid');
             });
         });

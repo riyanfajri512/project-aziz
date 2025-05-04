@@ -18,7 +18,9 @@ class Pendistribusian extends Model
         'tanggal',
         'user_id',
         'unit_id',
-        'deskripsi',
+        'nopol',
+        'nik_user',
+        'departemen',
         'total_harga'
     ];
 
