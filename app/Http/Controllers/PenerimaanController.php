@@ -283,6 +283,7 @@ class PenerimaanController extends Controller
 
     public function edit($id)
     {
+         // dd($request->all());
         $penerimaan = Penerimaan::findOrFail($id);
         $permintaanList = Permintaan::all(); // Jika kamu butuh daftar permintaan
         // Kalau kamu ingin generate ulang kode penerimaan
@@ -295,8 +296,9 @@ class PenerimaanController extends Controller
     }
     public function update(Request $request, $id)
     {
+        //  dd($request->all());
         try {
-            // First, validate the basic request structure
+            // Validasi request utama
             $validated = $request->validate([
                 'tanggal' => 'required|date',
                 'permintaan_id' => 'required|exists:tbl_permintaan,id',
@@ -313,7 +315,7 @@ class PenerimaanController extends Controller
     
             DB::beginTransaction();
     
-            // Properly handle items whether they're a JSON string or already an array
+            // Konversi JSON string jadi array jika perlu
             $items = is_string($request->items) ? json_decode($request->items, true) : $request->items;
     
             if (!is_array($items) || count($items) === 0) {
@@ -322,62 +324,41 @@ class PenerimaanController extends Controller
                 ]);
             }
     
-            // Validate each item individually
-            foreach ($items as $index => $item) {
-
-                if (empty($item['kode_sparepart'])) {
-
-                    if (!empty($item['kode_sparepart'])) {
-                        $sparepart = Sp::where('kode', $item['kode_sparepart'])->first();
-                        if ($sparepart) {
-                            $items[$index]['kode_sparepart'] = $sparepart->id;
-                        } else {
-                            throw ValidationException::withMessages([
-                                'items.'.$index.'.kode_sparepart' => ['Sparepart dengan kode '.$item['kode_sparepart'].' tidak ditemukan.']
-                            ]);
-                        }
-                    } else {
-                        throw ValidationException::withMessages([
-                            'items.'.$index.'.kode_sparepart' => ['The kode_sparepart field is required.']
-                        ]);
-                    }
-                }
+            // Ambil data penerimaan lama beserta itemnya
+            $penerimaan = Penerimaan::with('items')->findOrFail($id);
     
-                // Validate other required fields
-                $validator = Validator::make($item, [
-                    'kode_sparepart' => 'required',
-                    'jenis_kendaraan' => 'required',
-                    'nama_sparepart' => 'required',
-                    'qty' => 'required|numeric|min:0',
-                    'qty_diterima' => 'required|numeric|min:0',
-                    'harga' => 'required|numeric|min:0',
-                ]);
-    
-                if ($validator->fails()) {
-                    throw new ValidationException($validator);
+            foreach ($penerimaan->items as $oldItem) {
+                $oldSparepart = Sp::where('kode', $oldItem->kode_sparepart)->first();
+                if ($oldSparepart) {
+                    DB::table('tbl_sp')
+                        ->where('id', $oldSparepart->id) // gunakan ID sparepart, bukan kode
+                        ->decrement('stok', $oldItem->qty_diterima);
                 }
             }
     
-            $penerimaan = Penerimaan::with('items')->findOrFail($id);
+            // 2. Update header penerimaan
             $penerimaan->update([
                 'tanggal' => $validated['tanggal'],
                 'deskripsi' => $validated['deskripsi'] ?? '',
                 'user_id' => auth()->id()
             ]);
     
-            // 1. Kembalikan stok lama
-            foreach ($penerimaan->items as $oldItem) {
-                DB::table('tbl_sp')
-                    ->where('id', $oldItem->kode_sparepart)
-                    ->decrement('stok', $oldItem->qty_diterima);
-            }
-    
             $itemIds = [];
             $totalPayment = 0;
     
-            foreach ($items as $item) {
+            // 3. Proses setiap item baru
+            foreach ($items as $index => $item) {
+    
+                // Ambil ID sparepart berdasarkan kode
+                $sparepart = Sp::where('kode', $item['kode_sparepart'])->first();
+                if (!$sparepart) {
+                    throw ValidationException::withMessages([
+                        "items.$index.kode_sparepart" => ["Sparepart dengan kode {$item['kode_sparepart']} tidak ditemukan."]
+                    ]);
+                }
+    
                 $itemData = [
-                    'kode_sparepart' => $item['kode_sparepart'],
+                    'kode_sparepart' => $sparepart->id, // simpan ID
                     'jenis_kendaraan' => $item['jenis_kendaraan'],
                     'nama_sparepart' => $item['nama_sparepart'],
                     'qty' => $item['qty'],
@@ -393,27 +374,22 @@ class PenerimaanController extends Controller
                     $newItem = $penerimaan->items()->create($itemData);
                     $itemIds[] = $newItem->id;
                 }
-                
-                foreach ($items as $item) {
-                    // Cari sparepart berdasarkan kode
-                    $sparepart = Sp::where('kode', $item['kode_sparepart'])->first();
-                
-                    if (!$sparepart) {
-                        throw new \Exception("Sparepart dengan kode {$item['kode_sparepart']} tidak ditemukan");
-                    }
-                
-                    // Update stok di tbl_sp
-                    DB::table('tbl_sp')
-                        ->where('id', $sparepart->id)
-                        ->increment('stok', $item['qty_diterima']);
-                }
+    
+                // Tambahkan kembali stok sesuai qty_diterima baru
+                DB::table('tbl_sp')
+                    ->where('id', $sparepart->id)
+                    ->increment('stok', $item['qty_diterima']);
     
                 $totalPayment += $itemData['total_harga'];
             }
     
+            // 4. Hapus item yang tidak terpakai lagi
             $penerimaan->items()->whereNotIn('id', $itemIds)->delete();
+    
+            // 5. Update grand total
             $penerimaan->update(['grand_total' => $totalPayment]);
     
+            // 6. Proses upload file
             if ($request->hasFile('file')) {
                 if ($penerimaan->file_path && Storage::exists($penerimaan->file_path)) {
                     Storage::delete($penerimaan->file_path);
@@ -429,6 +405,7 @@ class PenerimaanController extends Controller
                 'message' => 'Penerimaan berhasil diperbarui',
                 'redirect' => route('penerimaan.index')
             ]);
+    
         } catch (ValidationException $e) {
             DB::rollBack();
             return response()->json([
@@ -441,9 +418,10 @@ class PenerimaanController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Terjadi kesalahan: ' . $e->getMessage(),
-                'trace' => $e->getTraceAsString() // For debugging
+                'trace' => $e->getTraceAsString()
             ], 500);
         }
     }
+    
 
 }
