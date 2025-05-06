@@ -1,3 +1,4 @@
+<!-- tampilan dashboard all user -->
 @extends('layout.app')
 @section('title', 'Dashboard Sparepart')
 

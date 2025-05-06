@@ -2,6 +2,7 @@
 @section('title', 'Permintaan')
 
 @section('main')
+<!-- tampilan halaman permintaan -->
 
     <!-- Modal -->
     <div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">

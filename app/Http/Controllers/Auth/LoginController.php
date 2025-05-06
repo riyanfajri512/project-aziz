@@ -15,6 +15,7 @@ class LoginController extends Controller
 
     public function login(Request $request)
     {
+        //untuk eksekusi fungsi button login
         // Debug untuk cek apakah request masuk dengan benar
         // dd($request->all());
 
